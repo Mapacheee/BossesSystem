@@ -1,0 +1,11 @@
+name: BossesSystem
+version: ${version}
+main: me.mapacheee.bossessystem.BossesSystemPlugin
+author: Mapacheee
+api-version: '1.21'
+folia-supported: false
+depend:
+  - Vault
+  - MythicMobs
+softdepend:
+  - PlaceholderAPI
