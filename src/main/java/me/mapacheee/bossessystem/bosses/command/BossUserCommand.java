@@ -9,6 +9,7 @@ import me.mapacheee.bossessystem.bosses.entity.SessionService;
 import me.mapacheee.bossessystem.bosses.gui.InvitesGui;
 import me.mapacheee.bossessystem.shared.messages.MessageService;
 import org.bukkit.entity.Player;
+import org.incendo.cloud.annotations.Argument;
 import org.incendo.cloud.annotations.Command;
 import org.incendo.cloud.annotations.Default;
 import org.incendo.cloud.annotations.Permission;
@@ -47,7 +48,7 @@ public final class BossUserCommand {
   }
 
   @Command("select <arenaId>")
-  public void select(final Source sender, final String arenaId) {
+  public void select(final Source sender, final @Argument("arenaId") String arenaId) {
     if (!(sender.source() instanceof Player p)) {
       this.messages.errorPlayerOnly(sender.source());
       return;
@@ -99,14 +100,14 @@ public final class BossUserCommand {
 
   @Command("spectate <arenaId>")
   @Permission("bossesystem.spectate")
-  public void spectate(final Source sender, final String arenaId) {
+  public void spectate(final Source sender, final @Argument("arenaId") String arenaId) {
     if (sender.source() instanceof Player p) {
       this.sessions.spectateCommand(p, arenaId);
     }
   }
 
   @Command("stats [bossId]")
-  public void stats(final Source sender, final @Default("") String bossId) {
+  public void stats(final Source sender, final @Default("") @Argument("bossId") String bossId) {
     if (bossId == null || bossId.isBlank()) {
       sender.source().sendMessage(ComponentUtils.miniMessage("<gray>Mostrando estadísticas generales..."));
     } else {

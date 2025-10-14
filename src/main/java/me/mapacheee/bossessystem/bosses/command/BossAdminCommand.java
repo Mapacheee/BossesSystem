@@ -11,6 +11,7 @@ import me.mapacheee.bossessystem.shared.messages.MessageService;
 import me.mapacheee.bossessystem.shared.messages.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.incendo.cloud.annotations.Argument;
 import org.incendo.cloud.annotations.Command;
 import org.incendo.cloud.annotations.Permission;
 import org.incendo.cloud.paper.util.sender.Source;
@@ -57,7 +58,7 @@ public final class BossAdminCommand {
   }
 
   @Command("arena info <id>")
-  public void info(final Source sender, final String id) {
+  public void info(final Source sender, final @Argument("id") String id) {
     final var arenas = this.config.get().arenas();
     if (arenas == null || !arenas.containsKey(id)) {
       this.messages.errorInvalidArena(sender.source(), id);
@@ -81,7 +82,14 @@ public final class BossAdminCommand {
   }
 
   @Command("arena create <id> <world> <x> <y> <z> [yaw] [pitch]")
-  public void create(final Source sender, final String id, final String world, final double x, final double y, final double z, final Float yaw, final Float pitch) {
+  public void create(final Source sender,
+                     final @Argument("id") String id,
+                     final @Argument("world") String world,
+                     final @Argument("x") double x,
+                     final @Argument("y") double y,
+                     final @Argument("z") double z,
+                     final @Argument("yaw") Float yaw,
+                     final @Argument("pitch") Float pitch) {
     final var root = this.config.get();
     var arenas = root.arenas();
     if (arenas == null) {
@@ -104,7 +112,9 @@ public final class BossAdminCommand {
   }
 
   @Command("arena clone <fromId> <toId>")
-  public void cloneArena(final Source sender, final String fromId, final String toId) {
+  public void cloneArena(final Source sender,
+                         final @Argument("fromId") String fromId,
+                         final @Argument("toId") String toId) {
     if (fromId.equalsIgnoreCase(toId)) {
       this.messages.errorArenaExists(sender.source(), toId);
       return;
@@ -127,7 +137,13 @@ public final class BossAdminCommand {
   }
 
   @Command("arena setspawn <id> <x> <y> <z> [yaw] [pitch]")
-  public void setSpawn(final Source sender, final String id, final double x, final double y, final double z, final Float yaw, final Float pitch) {
+  public void setSpawn(final Source sender,
+                       final @Argument("id") String id,
+                       final @Argument("x") double x,
+                       final @Argument("y") double y,
+                       final @Argument("z") double z,
+                       final @Argument("yaw") Float yaw,
+                       final @Argument("pitch") Float pitch) {
     final var root = this.config.get();
     final var arenas = root.arenas();
     if (arenas == null || !arenas.containsKey(id)) {
@@ -146,7 +162,7 @@ public final class BossAdminCommand {
   }
 
   @Command("arena setspawnhere <id>")
-  public void setSpawnHere(final Source sender, final String id) {
+  public void setSpawnHere(final Source sender, final @Argument("id") String id) {
     if (!(sender.source() instanceof Player p)) {
       this.messages.errorPlayerOnly(sender.source());
       return;
@@ -172,7 +188,9 @@ public final class BossAdminCommand {
   }
 
   @Command("arena setboss <id> <bossId>")
-  public void setBoss(final Source sender, final String id, final String bossId) {
+  public void setBoss(final Source sender,
+                      final @Argument("id") String id,
+                      final @Argument("bossId") String bossId) {
     final var arenas = this.config.get().arenas();
     if (arenas == null || !arenas.containsKey(id)) {
       this.messages.errorInvalidArena(sender.source(), id);
@@ -187,7 +205,9 @@ public final class BossAdminCommand {
   }
 
   @Command("arena setdelay <id> <seconds>")
-  public void setDelay(final Source sender, final String id, final int seconds) {
+  public void setDelay(final Source sender,
+                       final @Argument("id") String id,
+                       final @Argument("seconds") int seconds) {
     final var arenas = this.config.get().arenas();
     if (arenas == null || !arenas.containsKey(id)) {
       this.messages.errorInvalidArena(sender.source(), id);
@@ -202,7 +222,7 @@ public final class BossAdminCommand {
   }
 
   @Command("arena delete <id>")
-  public void delete(final Source sender, final String id) {
+  public void delete(final Source sender, final @Argument("id") String id) {
     final var arenas = this.config.get().arenas();
     if (arenas != null) arenas.remove(id);
     this.persistence.removeArena(id);
