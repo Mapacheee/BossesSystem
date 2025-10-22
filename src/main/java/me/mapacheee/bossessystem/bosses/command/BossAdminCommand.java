@@ -16,10 +16,8 @@ import org.incendo.cloud.annotations.Command;
 import org.incendo.cloud.annotations.Permission;
 import org.incendo.cloud.paper.util.sender.Source;
 
-import java.util.HashMap;
-
 @CommandComponent
-@Command("bossadmin|bossesadmin|bosses:admin|boss:admin|boss admin|bosses admin")
+@Command("bossadmin|bossesadmin|bosses:admin|boss:admin")
 @Permission("bossesystem.admin")
 public final class BossAdminCommand {
 

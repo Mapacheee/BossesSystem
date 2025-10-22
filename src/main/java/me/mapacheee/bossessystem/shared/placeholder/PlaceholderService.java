@@ -6,10 +6,10 @@ import com.thewinterframework.service.annotation.lifecycle.OnEnable;
 import me.mapacheee.bossessystem.bosses.entity.ArenaRegistryService;
 import me.mapacheee.bossessystem.bosses.entity.SessionService;
 import me.mapacheee.bossessystem.shared.stats.StatsService;
-import org.bukkit.Bukkit;
-import org.jetbrains.annotations.NotNull;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import org.bukkit.Bukkit;
+import org.jetbrains.annotations.NotNull;
 
 @Service
 public final class PlaceholderService {

@@ -18,7 +18,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public final class SessionService {

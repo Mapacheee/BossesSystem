@@ -1,15 +1,37 @@
 package me.mapacheee.bossessystem.shared.mythic;
 
 import com.thewinterframework.service.annotation.Service;
+import com.thewinterframework.service.annotation.lifecycle.OnEnable;
+import me.mapacheee.bossessystem.bosses.listener.BossLifecycleListener;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
+import org.bukkit.plugin.PluginManager;
 
+import com.google.inject.Inject;
 import java.lang.reflect.Method;
 import java.util.UUID;
 
 @Service
 public final class MythicMobsService {
+
+  private final PluginManager pluginManager;
+  private final BossLifecycleListener bossLifecycleListener;
+
+  @Inject
+  public MythicMobsService(final PluginManager pluginManager, final BossLifecycleListener bossLifecycleListener) {
+    this.pluginManager = pluginManager;
+    this.bossLifecycleListener = bossLifecycleListener;
+  }
+
+  @OnEnable
+  void registerListener() {
+    try {
+      Class.forName("io.lumine.mythic.bukkit.events.MythicMobDeathEvent");
+      this.pluginManager.registerEvents(this.bossLifecycleListener, Bukkit.getPluginManager().getPlugin("BossesSystem"));
+    } catch (ClassNotFoundException ignored) {
+    }
+  }
 
   public UUID spawn(final String mythicId, final Location location) {
     try {
