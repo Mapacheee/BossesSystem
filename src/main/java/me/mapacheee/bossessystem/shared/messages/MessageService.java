@@ -1,11 +1,11 @@
 package me.mapacheee.bossessystem.shared.messages;
 
 import com.google.inject.Inject;
-import com.thewinterframework.component.ComponentUtils;
 import com.thewinterframework.configurate.Container;
 import com.thewinterframework.service.annotation.Service;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -13,6 +13,11 @@ import java.util.Map;
 
 @Service
 public final class MessageService {
+
+  private static final LegacyComponentSerializer LEGACY_SERIALIZER = LegacyComponentSerializer.builder()
+      .hexColors()
+      .useUnusualXRepeatedCharacterHexFormat()
+      .build();
 
   private final Container<Messages> messages;
 
@@ -39,7 +44,7 @@ public final class MessageService {
         processed = processed.replace("{" + e.getKey() + "}", e.getValue());
       }
     }
-    return ComponentUtils.miniMessage(processed);
+    return LEGACY_SERIALIZER.deserialize(processed);
   }
 
   private String resolve(final String section, final String key) {
