@@ -109,6 +109,35 @@ public final class BossAdminCommand {
     this.sendArenaInfo(sender, id, arenaObj);
   }
 
+  @Command("arena createhere <id>")
+  public void createHere(final Source sender, final @Argument("id") String id) {
+    if (!(sender.source() instanceof Player p)) {
+      this.messages.errorPlayerOnly(sender.source());
+      return;
+    }
+    final var root = this.config.get();
+    var arenas = root.arenas();
+    if (arenas == null) {
+      arenas = new java.util.HashMap<>();
+    }
+    if (arenas.containsKey(id)) {
+      this.messages.errorArenaExists(sender.source(), id);
+      return;
+    }
+    final var loc = p.getLocation();
+    final var world = loc.getWorld();
+    if (world == null) {
+      this.messages.errorPlayerOnly(sender.source());
+      return;
+    }
+    final var spawn = new Config.Arena.Spawn(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
+    final var arenaObj = new Config.Arena(world.getName(), spawn, "", null);
+    arenas.put(id, arenaObj);
+    this.persistence.putArena(id, arenaObj);
+    this.messages.adminArenaCreated(sender.source(), id);
+    this.sendArenaInfo(sender, id, arenaObj);
+  }
+
   @Command("arena clone <fromId> <toId>")
   public void cloneArena(final Source sender,
                          final @Argument("fromId") String fromId,
