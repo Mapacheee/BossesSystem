@@ -64,6 +64,11 @@ public final class BossAdminCommand {
     }
     final var a = arenas.get(id);
     this.sendArenaInfo(sender, id, a);
+
+    final String mythicDebug = a.mythicMobId() == null ? "NULL" :
+                                a.mythicMobId().isEmpty() ? "EMPTY STRING" :
+                                "'" + a.mythicMobId() + "'";
+    sender.source().sendMessage(ComponentUtils.miniMessage("<yellow>[DEBUG] mythicMobId = " + mythicDebug));
   }
 
   private void sendArenaInfo(final Source sender, final String id, final Config.Arena a) {
@@ -74,9 +79,23 @@ public final class BossAdminCommand {
     final String z = s == null ? "-" : String.format("%.2f", s.z());
     final String yaw = s == null ? "-" : String.format("%.1f", s.yaw());
     final String pitch = s == null ? "-" : String.format("%.1f", s.pitch());
-    final String boss = a.bossId() == null ? "-" : a.bossId();
-    final String delay = a.spawnDelaySeconds() == null ? "-" : String.valueOf(a.spawnDelaySeconds());
-    this.messages.adminArenaInfo(sender.source(), id, world, x, y, z, yaw, pitch, boss, delay);
+    final String mythicMob = a.mythicMobId() == null || a.mythicMobId().isEmpty() ? "-" : a.mythicMobId();
+    final String price = a.price() == null ? String.valueOf(this.config.get().general().defaultPrice()) : String.valueOf(a.price());
+    final String timeLimit = a.timeLimitSeconds() == null ? String.valueOf(this.config.get().general().defaultTimeLimitSeconds()) : String.valueOf(a.timeLimitSeconds());
+    final String maxPlayers = a.maxPlayers() == null ? String.valueOf(this.config.get().general().defaultMaxPlayers()) : String.valueOf(a.maxPlayers());
+    final String delay = a.spawnDelaySeconds() == null ? String.valueOf(this.config.get().general().defaultSpawnDelaySeconds()) : String.valueOf(a.spawnDelaySeconds());
+
+    sender.source().sendMessage(ComponentUtils.miniMessage(
+        "<gray>Arena <white>" + id + "</white>:\n" +
+        "  <gray>Mundo: <white>" + world + "</white>\n" +
+        "  <gray>Spawn: <white>" + x + ", " + y + ", " + z + "</white>\n" +
+        "  <gray>Yaw/Pitch: <white>" + yaw + ", " + pitch + "</white>\n" +
+        "  <gray>MythicMob ID: <white>" + mythicMob + "</white>\n" +
+        "  <gray>Precio: <white>" + price + "</white>\n" +
+        "  <gray>Tiempo límite: <white>" + timeLimit + "s</white>\n" +
+        "  <gray>Max jugadores: <white>" + maxPlayers + "</white>\n" +
+        "  <gray>Delay spawn: <white>" + delay + "s</white>"
+    ));
   }
 
   @Command("arena create <id> <world> <x> <y> <z> [yaw] [pitch]")
@@ -102,7 +121,7 @@ public final class BossAdminCommand {
       return;
     }
     final var spawn = new Config.Arena.Spawn(x, y, z, yaw == null ? 0f : yaw, pitch == null ? 0f : pitch);
-    final var arenaObj = new Config.Arena(world, spawn, "", null);
+    final var arenaObj = new Config.Arena(world, spawn, null, null, null, null, null);
     arenas.put(id, arenaObj);
     this.persistence.putArena(id, arenaObj);
     this.messages.adminArenaCreated(sender.source(), id);
@@ -131,7 +150,7 @@ public final class BossAdminCommand {
       return;
     }
     final var spawn = new Config.Arena.Spawn(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
-    final var arenaObj = new Config.Arena(world.getName(), spawn, "", null);
+    final var arenaObj = new Config.Arena(world.getName(), spawn, null, null, null, null, null);
     arenas.put(id, arenaObj);
     this.persistence.putArena(id, arenaObj);
     this.messages.adminArenaCreated(sender.source(), id);
@@ -156,7 +175,7 @@ public final class BossAdminCommand {
       return;
     }
     final var src = arenas.get(fromId);
-    final var clone = new Config.Arena(src.world(), src.spawn(), src.bossId(), src.spawnDelaySeconds());
+    final var clone = new Config.Arena(src.world(), src.spawn(), src.mythicMobId(), src.price(), src.timeLimitSeconds(), src.maxPlayers(), src.spawnDelaySeconds());
     arenas.put(toId, clone);
     this.persistence.putArena(toId, clone);
     this.messages.adminArenaCreated(sender.source(), toId);
@@ -181,7 +200,7 @@ public final class BossAdminCommand {
     final float baseYaw = a.spawn() != null ? a.spawn().yaw() : 0f;
     final float basePitch = a.spawn() != null ? a.spawn().pitch() : 0f;
     final var spawn = new Config.Arena.Spawn(x, y, z, yaw == null ? baseYaw : yaw, pitch == null ? basePitch : pitch);
-    final var updated = new Config.Arena(a.world(), spawn, a.bossId(), a.spawnDelaySeconds());
+    final var updated = new Config.Arena(a.world(), spawn, a.mythicMobId(), a.price(), a.timeLimitSeconds(), a.maxPlayers(), a.spawnDelaySeconds());
     arenas.put(id, updated);
     this.persistence.putArena(id, updated);
     this.messages.adminArenaUpdated(sender.source(), id);
@@ -207,24 +226,85 @@ public final class BossAdminCommand {
       return;
     }
     final var spawn = new Config.Arena.Spawn(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
-    final var updated = new Config.Arena(world.getName(), spawn, a.bossId(), a.spawnDelaySeconds());
+    final var updated = new Config.Arena(world.getName(), spawn, a.mythicMobId(), a.price(), a.timeLimitSeconds(), a.maxPlayers(), a.spawnDelaySeconds());
     arenas.put(id, updated);
     this.persistence.putArena(id, updated);
     this.messages.adminArenaUpdated(sender.source(), id);
     this.sendArenaInfo(sender, id, updated);
   }
 
-  @Command("arena setboss <id> <bossId>")
+  @Command("arena setboss <id> <mythicMobId>")
   public void setBoss(final Source sender,
                       final @Argument("id") String id,
-                      final @Argument("bossId") String bossId) {
+                      final @Argument("mythicMobId") String mythicMobId) {
     final var arenas = this.config.get().arenas();
     if (arenas == null || !arenas.containsKey(id)) {
       this.messages.errorInvalidArena(sender.source(), id);
       return;
     }
     final var a = arenas.get(id);
-    final var updated = new Config.Arena(a.world(), a.spawn(), bossId, a.spawnDelaySeconds());
+
+    sender.source().sendMessage(ComponentUtils.miniMessage("<yellow>[DEBUG] Guardando mythicMobId: '" + mythicMobId + "'"));
+
+    final var updated = new Config.Arena(a.world(), a.spawn(), mythicMobId, a.price(), a.timeLimitSeconds(), a.maxPlayers(), a.spawnDelaySeconds());
+
+    sender.source().sendMessage(ComponentUtils.miniMessage("<yellow>[DEBUG] Arena antes de persistir - mythicMobId: '" + updated.mythicMobId() + "'"));
+
+    this.persistence.putArena(id, updated);
+
+    // Verificar después de persistir
+    final var verificar = this.config.get().arenas().get(id);
+    sender.source().sendMessage(ComponentUtils.miniMessage("<yellow>[DEBUG] Arena después de persistir - mythicMobId: '" + (verificar != null ? verificar.mythicMobId() : "NULL") + "'"));
+
+    this.messages.adminArenaUpdated(sender.source(), id);
+    this.sendArenaInfo(sender, id, updated);
+  }
+
+  @Command("arena setprice <id> <price>")
+  public void setPrice(final Source sender,
+                       final @Argument("id") String id,
+                       final @Argument("price") double price) {
+    final var arenas = this.config.get().arenas();
+    if (arenas == null || !arenas.containsKey(id)) {
+      this.messages.errorInvalidArena(sender.source(), id);
+      return;
+    }
+    final var a = arenas.get(id);
+    final var updated = new Config.Arena(a.world(), a.spawn(), a.mythicMobId(), price, a.timeLimitSeconds(), a.maxPlayers(), a.spawnDelaySeconds());
+    arenas.put(id, updated);
+    this.persistence.putArena(id, updated);
+    this.messages.adminArenaUpdated(sender.source(), id);
+    this.sendArenaInfo(sender, id, updated);
+  }
+
+  @Command("arena settimeout <id> <seconds>")
+  public void setTimeout(final Source sender,
+                         final @Argument("id") String id,
+                         final @Argument("seconds") int seconds) {
+    final var arenas = this.config.get().arenas();
+    if (arenas == null || !arenas.containsKey(id)) {
+      this.messages.errorInvalidArena(sender.source(), id);
+      return;
+    }
+    final var a = arenas.get(id);
+    final var updated = new Config.Arena(a.world(), a.spawn(), a.mythicMobId(), a.price(), seconds, a.maxPlayers(), a.spawnDelaySeconds());
+    arenas.put(id, updated);
+    this.persistence.putArena(id, updated);
+    this.messages.adminArenaUpdated(sender.source(), id);
+    this.sendArenaInfo(sender, id, updated);
+  }
+
+  @Command("arena setmaxplayers <id> <maxPlayers>")
+  public void setMaxPlayers(final Source sender,
+                            final @Argument("id") String id,
+                            final @Argument("maxPlayers") int maxPlayers) {
+    final var arenas = this.config.get().arenas();
+    if (arenas == null || !arenas.containsKey(id)) {
+      this.messages.errorInvalidArena(sender.source(), id);
+      return;
+    }
+    final var a = arenas.get(id);
+    final var updated = new Config.Arena(a.world(), a.spawn(), a.mythicMobId(), a.price(), a.timeLimitSeconds(), maxPlayers, a.spawnDelaySeconds());
     arenas.put(id, updated);
     this.persistence.putArena(id, updated);
     this.messages.adminArenaUpdated(sender.source(), id);
@@ -241,7 +321,7 @@ public final class BossAdminCommand {
       return;
     }
     final var a = arenas.get(id);
-    final var updated = new Config.Arena(a.world(), a.spawn(), a.bossId(), seconds);
+    final var updated = new Config.Arena(a.world(), a.spawn(), a.mythicMobId(), a.price(), a.timeLimitSeconds(), a.maxPlayers(), seconds);
     arenas.put(id, updated);
     this.persistence.putArena(id, updated);
     this.messages.adminArenaUpdated(sender.source(), id);

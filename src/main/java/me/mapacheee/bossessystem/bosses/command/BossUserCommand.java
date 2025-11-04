@@ -62,7 +62,7 @@ public final class BossUserCommand {
       this.messages.errorArenaOccupied(sender.source(), arenaId);
       return;
     }
-    this.messages.flowArenaSelected(sender.source(), arenaId, arena.bossId());
+    this.messages.flowArenaSelected(sender.source(), arenaId, arena.mythicMobId());
     this.invitesGui.open(p, arenaId);
   }
 

@@ -16,11 +16,15 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 @Service
 public final class SessionService {
+
+  private static final Logger logger = LoggerFactory.getLogger(SessionService.class);
 
   private final ArenaRegistryService arenas;
   private final BossRegistryService bosses;
@@ -80,16 +84,21 @@ public final class SessionService {
       return;
     }
 
-    final var bossCfg = this.bosses.getBoss(arenaCfg.bossId());
-    if (bossCfg == null) {
-      this.sendTo(participants, p -> this.messages.errorInvalidBoss(p, arenaCfg.bossId()));
+    if (arenaCfg.mythicMobId() == null || arenaCfg.mythicMobId().isEmpty()) {
+      this.sendTo(participants, p -> this.messages.errorArenaNoBoss(p, arenaId));
       return;
     }
 
-    final double price = bossCfg.price();
+    final double price = this.bosses.getPrice(arenaCfg);
     final List<Player> online = participants.stream().map(Bukkit::getPlayer).filter(Objects::nonNull).toList();
+
+    if (!this.economy.isAvailable()) {
+      this.sendTo(participants, p -> this.messages.errorMissingIntegration(p, "Vault"));
+      return;
+    }
+
     for (final var p : online) {
-      if (!this.economy.isAvailable() || !this.economy.has(p, price)) {
+      if (!this.economy.has(p, price)) {
         this.messages.errorInsufficientBalance(p, p.getName(), String.valueOf(price));
         return;
       }
@@ -117,8 +126,8 @@ public final class SessionService {
     }
 
     final Location spawn = new Location(world, arenaCfg.spawn().x(), arenaCfg.spawn().y(), arenaCfg.spawn().z(), arenaCfg.spawn().yaw(), arenaCfg.spawn().pitch());
-    final long timeLimit = bossCfg.timeLimitSeconds() > 0 ? bossCfg.timeLimitSeconds() : this.bosses.defaultTimeLimitSeconds();
-    final Session session = new Session(arenaId, arenaCfg.bossId(), participants.get(0), timeLimit, spawn);
+    final long timeLimit = this.bosses.getTimeLimitSeconds(arenaCfg);
+    final Session session = new Session(arenaId, arenaCfg.mythicMobId(), participants.getFirst(), timeLimit, spawn);
     session.participants.addAll(participants);
     session.price = price;
     this.sessionsByArena.put(arenaId, session);
@@ -129,11 +138,14 @@ public final class SessionService {
       this.teleport.teleportTo(p, spawn);
     }
 
-    final int spawnDelay = arenaCfg.spawnDelaySeconds() != null ? arenaCfg.spawnDelaySeconds() : (bossCfg.spawnDelaySeconds() > 0 ? bossCfg.spawnDelaySeconds() : this.bosses.defaultSpawnDelaySeconds());
-    this.sendTo(participants, player -> this.messages.flowBossSpawnsIn(player, spawnDelay));
+    final int spawnDelay = participants.size() == 1 ? 0 : this.bosses.getSpawnDelaySeconds(arenaCfg);
+
+    if (spawnDelay > 0) {
+      this.sendTo(participants, player -> this.messages.flowBossSpawnsIn(player, spawnDelay));
+    }
 
     Bukkit.getScheduler().runTaskLater(BossesSystemPlugin.get(), () -> {
-      final var uuid = this.mythic.spawn(bossCfg.mythicId(), spawn);
+      final var uuid = this.mythic.spawn(arenaCfg.mythicMobId(), spawn);
       session.startMillis = System.currentTimeMillis();
       session.bossUuid = uuid;
       this.sendTo(participants, this.messages::flowFightStarted);
@@ -153,14 +165,24 @@ public final class SessionService {
   }
 
   public void onBossDeath(final UUID bossUuid) {
+    logger.debug("onBossDeath called with UUID: {}", bossUuid);
+
     final var entry = this.sessionsByArena.entrySet().stream()
         .filter(e -> Objects.equals(e.getValue().bossUuid, bossUuid))
         .findFirst().orElse(null);
-    if (entry == null) return;
+
+    if (entry == null) {
+      logger.debug("No session found for boss UUID: {}", bossUuid);
+      return;
+    }
+
     final var arenaId = entry.getKey();
     final var session = entry.getValue();
+    logger.info("Boss defeated in arena '{}' - Victory!", arenaId);
+
     final long duration = session.startMillis > 0 ? System.currentTimeMillis() - session.startMillis : 0L;
     this.endSession(arenaId, session, "victory", duration, new ArrayList<>(session.participants));
+
     final var leader = Bukkit.getPlayer(session.leader);
     this.stats.recordVictory(session.bossId, duration, leader != null ? leader.getName() : "");
   }

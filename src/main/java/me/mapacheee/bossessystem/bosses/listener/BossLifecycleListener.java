@@ -2,38 +2,52 @@ package me.mapacheee.bossessystem.bosses.listener;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.thewinterframework.paper.listener.ListenerComponent;
 import me.mapacheee.bossessystem.bosses.entity.SessionService;
-import org.bukkit.event.Event;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.UUID;
-
+@ListenerComponent
 public final class BossLifecycleListener implements Listener {
+
+  private static final Logger logger = LoggerFactory.getLogger(BossLifecycleListener.class);
 
   private final Provider<SessionService> sessions;
 
   @Inject
-  public BossLifecycleListener(final Provider<SessionService> sessions) { this.sessions = sessions; }
+  public BossLifecycleListener(final Provider<SessionService> sessions) {
+    this.sessions = sessions;
+  }
 
-  @EventHandler
-  public void onMythicMobDeath(final Event event) {
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onEntityDeath(final EntityDeathEvent event) {
+    final LivingEntity entity = event.getEntity();
+
+    logger.debug("Entity death: {} at {}", entity.getType(), entity.getLocation());
+
+    // Verificar si es un MythicMob usando reflexión
     try {
-      if (!event.getClass().getName().equals("io.lumine.mythic.bukkit.events.MythicMobDeathEvent")) {
-        return;
+      final Class<?> mythicBukkitClass = Class.forName("io.lumine.mythic.bukkit.MythicBukkit");
+      final var instMethod = mythicBukkitClass.getMethod("inst");
+      final var mythicInstance = instMethod.invoke(null);
+
+      final var getAPIHelperMethod = mythicInstance.getClass().getMethod("getAPIHelper");
+      final var apiHelper = getAPIHelperMethod.invoke(mythicInstance);
+
+      final var isMythicMobMethod = apiHelper.getClass().getMethod("isMythicMob", org.bukkit.entity.Entity.class);
+      final boolean isMythicMob = (boolean) isMythicMobMethod.invoke(apiHelper, entity);
+
+      if (isMythicMob) {
+        logger.debug("MythicMob death detected, notifying SessionService");
+        this.sessions.get().onBossDeath(entity.getUniqueId());
       }
-      final var getMobMethod = event.getClass().getMethod("getMob");
-      final var activeMob = getMobMethod.invoke(event);
-      final var getEntityMethod = activeMob.getClass().getMethod("getEntity");
-      final var mythicEntity = getEntityMethod.invoke(activeMob);
-      final var getBukkitEntityMethod = mythicEntity.getClass().getMethod("getBukkitEntity");
-      final var bukkit = getBukkitEntityMethod.invoke(mythicEntity);
-      if (bukkit != null) {
-        final var getUniqueIdMethod = bukkit.getClass().getMethod("getUniqueId");
-        final var uuid = (UUID) getUniqueIdMethod.invoke(bukkit);
-        this.sessions.get().onBossDeath(uuid);
-      }
-    } catch (Throwable ignored) {
+    } catch (Throwable e) {
+      logger.debug("Error checking MythicMob: {}", e.getMessage());
     }
   }
 }

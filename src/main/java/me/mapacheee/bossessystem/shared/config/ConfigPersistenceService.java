@@ -3,15 +3,16 @@ package me.mapacheee.bossessystem.shared.config;
 import com.google.inject.Inject;
 import com.thewinterframework.configurate.Container;
 import com.thewinterframework.service.annotation.Service;
-import me.mapacheee.bossessystem.BossesSystemPlugin;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.spongepowered.configurate.serialize.SerializationException;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Map;
 
 @Service
 public final class ConfigPersistenceService {
+
+  private static final Logger logger = LoggerFactory.getLogger(ConfigPersistenceService.class);
 
   private final Container<Config> config;
 
@@ -21,119 +22,80 @@ public final class ConfigPersistenceService {
   }
 
   public void saveArenas() {
-    try {
-      final YamlConfiguration yaml = loadYaml();
-      yaml.set("arenas", null);
-      final Map<String, Config.Arena> arenas = this.config.get().arenas();
-      if (arenas != null) {
-        for (final var e : arenas.entrySet()) {
-          writeArenaToYaml(yaml, e.getKey(), e.getValue());
-        }
-      }
-      yaml.save(getConfigFile());
-      this.config.reload();
-    } catch (IOException ex) {
-      ex.printStackTrace();
+    if (config.save()) {
+      logger.debug("Arenas saved to config");
+    } else {
+      logger.error("Failed to save arenas");
     }
   }
 
   public void putArena(final String id, final Config.Arena arena) {
+    logger.debug("Guardando arena '{}' con mythicMobId: '{}'", id, arena.mythicMobId());
+
     try {
-      final YamlConfiguration yaml = loadYaml();
-      writeArenaToYaml(yaml, id, arena);
-      yaml.save(getConfigFile());
-      this.config.reload();
-    } catch (IOException ex) {
-      ex.printStackTrace();
+      Map<String, Config.Arena> arenas = this.config.get().arenas();
+      if (arenas != null) {
+        arenas.put(id, arena);
+      }
+
+      var arenaNode = config.getNode().node("arenas", id);
+
+      arenaNode.node("world").set(arena.world());
+
+      if (arena.spawn() != null) {
+        arenaNode.node("spawn", "x").set(arena.spawn().x());
+        arenaNode.node("spawn", "y").set(arena.spawn().y());
+        arenaNode.node("spawn", "z").set(arena.spawn().z());
+        arenaNode.node("spawn", "yaw").set(arena.spawn().yaw());
+        arenaNode.node("spawn", "pitch").set(arena.spawn().pitch());
+      }
+
+      if (arena.mythicMobId() != null && !arena.mythicMobId().isEmpty()) {
+        arenaNode.node("mythicMobId").set(arena.mythicMobId());
+      }
+
+      if (arena.price() != null) {
+        arenaNode.node("price").set(arena.price());
+      }
+
+      if (arena.timeLimitSeconds() != null) {
+        arenaNode.node("timeLimitSeconds").set(arena.timeLimitSeconds());
+      }
+
+      if (arena.maxPlayers() != null) {
+        arenaNode.node("maxPlayers").set(arena.maxPlayers());
+      }
+
+      if (arena.spawnDelaySeconds() != null) {
+        arenaNode.node("spawnDelaySeconds").set(arena.spawnDelaySeconds());
+      }
+
+      boolean saved = config.save();
+
+      if (!saved) {
+        logger.error("Error al guardar arena '{}' al archivo", id);
+      }
+
+    } catch (SerializationException e) {
+      logger.error("Error al serializar arena '{}'", id, e);
     }
   }
 
   public void removeArena(final String id) {
     try {
-      final YamlConfiguration yaml = loadYaml();
-      yaml.set("arenas." + id, null);
-      yaml.save(getConfigFile());
-      this.config.reload();
-    } catch (IOException ex) {
-      ex.printStackTrace();
-    }
-  }
+      config.getNode().node("arenas", id).set(null);
 
-  private static void writeArenaToYaml(final YamlConfiguration yaml, final String id, final Config.Arena a) {
-    final String base = "arenas." + id + ".";
-    yaml.set(base + "world", a.world());
-    if (a.spawn() != null) {
-      yaml.set(base + "spawn.x", a.spawn().x());
-      yaml.set(base + "spawn.y", a.spawn().y());
-      yaml.set(base + "spawn.z", a.spawn().z());
-      yaml.set(base + "spawn.yaw", a.spawn().yaw());
-      yaml.set(base + "spawn.pitch", a.spawn().pitch());
-    }
-    yaml.set(base + "bossId", a.bossId());
-    if (a.spawnDelaySeconds() != null) {
-      yaml.set(base + "spawnDelaySeconds", a.spawnDelaySeconds());
-    }
-  }
+      boolean saved = config.save();
 
-  public void saveBosses() {
-    try {
-      final YamlConfiguration yaml = this.loadYaml();
-      yaml.set("bosses", null);
-      final Map<String, Config.Boss> bosses = this.config.get().bosses();
-      if (bosses != null) {
-        for (final var e : bosses.entrySet()) {
-          writeBossToYaml(yaml, e.getKey(), e.getValue());
-        }
+      if (saved) {
+        config.reload();
+        logger.debug("Arena '{}' eliminada exitosamente", id);
+      } else {
+        logger.error("Error al eliminar arena '{}'", id);
       }
-      yaml.save(getConfigFile());
-      this.config.reload();
-    } catch (IOException ex) {
-      ex.printStackTrace();
+
+    } catch (SerializationException e) {
+      logger.error("Error al eliminar arena '{}'", id, e);
     }
-  }
-
-  public void putBoss(final String id, final Config.Boss boss) {
-    try {
-      final YamlConfiguration yaml = loadYaml();
-      writeBossToYaml(yaml, id, boss);
-      yaml.save(getConfigFile());
-      this.config.reload();
-    } catch (IOException ex) {
-      ex.printStackTrace();
-    }
-  }
-
-  public void removeBoss(final String id) {
-    try {
-      final YamlConfiguration yaml = loadYaml();
-      yaml.set("bosses." + id, null);
-      yaml.save(getConfigFile());
-      this.config.reload();
-    } catch (IOException ex) {
-      ex.printStackTrace();
-    }
-  }
-
-  private static void writeBossToYaml(final YamlConfiguration yaml, final String id, final Config.Boss b) {
-    final String base = "bosses." + id + ".";
-    yaml.set(base + "mythicId", b.mythicId());
-    yaml.set(base + "price", b.price());
-    yaml.set(base + "timeLimitSeconds", b.timeLimitSeconds());
-    yaml.set(base + "maxPlayers", b.maxPlayers());
-    yaml.set(base + "spawnDelaySeconds", b.spawnDelaySeconds());
-  }
-
-  private static File getConfigFile() {
-    final File dataFolder = BossesSystemPlugin.get().getDataFolder();
-    if (!dataFolder.exists()) dataFolder.mkdirs();
-    final File file = new File(dataFolder, "config.yml");
-    if (!file.exists()) {
-      BossesSystemPlugin.get().saveResource("config.yml", false);
-    }
-    return file;
-  }
-
-  private static YamlConfiguration loadYaml() {
-    return YamlConfiguration.loadConfiguration(getConfigFile());
   }
 }

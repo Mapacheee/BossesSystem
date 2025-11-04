@@ -101,8 +101,7 @@ public final class InvitesGui {
     } else {
       final var arena = this.arenas.getArena(state.arenaId());
       if (arena != null) {
-        final var boss = this.bosses.getBoss(arena.bossId());
-        int max = boss != null ? boss.maxPlayers() : this.bosses.defaultMaxPlayers();
+        int max = this.bosses.getMaxPlayers(arena);
         if (1 + state.selected().size() >= max) {
           this.messages.errorMaxPlayers(clicker, max);
           return;
@@ -121,14 +120,16 @@ public final class InvitesGui {
 
     final var inv = this.parties.startInvites(leader, arenaId, players);
 
-    this.messages.flowInvitesSent(leader,
-        players.stream().map(Player::getName).collect(Collectors.joining(", ")),
-        this.config.get().general().invitation().autoExpireSeconds());
+    if (!players.isEmpty()) {
+      this.messages.flowInvitesSent(leader,
+          players.stream().map(Player::getName).collect(Collectors.joining(", ")),
+          this.config.get().general().invitation().autoExpireSeconds());
 
-    final var arena = this.arenas.getArena(arenaId);
-    final String bossId = arena != null ? arena.bossId() : "";
-    for (final var p : players) {
-      this.messages.flowInviteReceived(p, leader.getName(), bossId, arenaId, this.config.get().general().invitation().autoExpireSeconds());
+      final var arena = this.arenas.getArena(arenaId);
+      final String bossId = arena != null ? arena.mythicMobId() : "";
+      for (final var p : players) {
+        this.messages.flowInviteReceived(p, leader.getName(), bossId, arenaId, this.config.get().general().invitation().autoExpireSeconds());
+      }
     }
   }
 

@@ -7,6 +7,7 @@ general:
   default-spawn-delay-seconds: 5
   default-time-limit-seconds: 300
   default-max-players: 5
+  default-price: 1000.0
 spectators:
   enabled: true
   gamemode: SPECTATOR
@@ -16,11 +17,11 @@ exit:
     victory:
       dispatch-as: player
       commands:
-        - "lobby"
+        - "spawn"
     timeout:
       dispatch-as: player
       commands:
-        - "lobby"
+        - "spawn"
     aborted:
       dispatch-as: console
       commands:
@@ -32,7 +33,7 @@ integrations:
     enabled: true
 gui:
   invites:
-    title: "&#00BFFFInvitar jugadores"
+    title: "      <#BF2A45><bold>Invitar jugadores"
     rows: 6
     show-online-only: true
     exclude-leader: true
@@ -45,28 +46,30 @@ gui:
       filler-slots: [45,46,47,49,51,52]
     items:
       player:
-        name: "&#00FF7F{player}"
+        name: "<#00FF7F>{player}"
         lore-selected:
-          - "&#A0A0A0Clic para quitar invitación"
+          - "<#A0A0A0>Clic para quitar invitación"
         lore-unselected:
-          - "&#A0A0A0Clic para invitar"
+          - "<#A0A0A0>Clic para invitar"
       confirm:
         material: LIME_DYE
-        name: "&#00FF00Terminar"
+        name: "<#00FF00>Terminar"
         lore:
-          - "&#A0A0A0Invitar a {selectedCount} jugadores"
+          - "<#A0A0A0>Invitar a {selectedCount} jugadores"
       prev:
         material: ARROW
-        name: "&#FFD700Página anterior"
+        name: "<#FFD700>Página anterior"
         lore: []
       next:
         material: ARROW
-        name: "&#FFD700Página siguiente"
+        name: "<#FFD700>Página siguiente"
         lore: []
       filler:
         material: BLACK_STAINED_GLASS_PANE
         name: " "
         lore: []
-bosses: {}
+    sounds:
+      click: ""
+      confirm: ""
+      error: ""
 arenas: {}
-

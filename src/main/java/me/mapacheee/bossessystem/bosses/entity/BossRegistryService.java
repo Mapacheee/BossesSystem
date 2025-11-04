@@ -5,9 +5,6 @@ import com.thewinterframework.configurate.Container;
 import com.thewinterframework.service.annotation.Service;
 import me.mapacheee.bossessystem.shared.config.Config;
 
-import java.util.Map;
-import java.util.Set;
-
 @Service
 public final class BossRegistryService {
 
@@ -18,17 +15,20 @@ public final class BossRegistryService {
     this.config = config;
   }
 
-  public Set<String> bossIds() {
-    final var bosses = this.config.get().bosses();
-    return bosses != null ? bosses.keySet() : Set.of();
+  public double getPrice(final Config.Arena arena) {
+    return arena.price() != null ? arena.price() : this.config.get().general().defaultPrice();
   }
 
-  public Config.Boss getBoss(final String bossId) {
-    final Map<String, Config.Boss> bosses = this.config.get().bosses();
-    if (bosses == null) return null;
-    final var boss = bosses.get(bossId);
-    if (boss == null) return null;
-    return boss;
+  public int getTimeLimitSeconds(final Config.Arena arena) {
+    return arena.timeLimitSeconds() != null ? arena.timeLimitSeconds() : this.config.get().general().defaultTimeLimitSeconds();
+  }
+
+  public int getMaxPlayers(final Config.Arena arena) {
+    return arena.maxPlayers() != null ? arena.maxPlayers() : this.config.get().general().defaultMaxPlayers();
+  }
+
+  public int getSpawnDelaySeconds(final Config.Arena arena) {
+    return arena.spawnDelaySeconds() != null ? arena.spawnDelaySeconds() : this.config.get().general().defaultSpawnDelaySeconds();
   }
 
   public int defaultMaxPlayers() {
@@ -43,4 +43,3 @@ public final class BossRegistryService {
     return this.config.get().general().defaultSpawnDelaySeconds();
   }
 }
-

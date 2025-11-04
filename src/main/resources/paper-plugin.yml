@@ -4,8 +4,17 @@ main: me.mapacheee.bossessystem.BossesSystemPlugin
 author: Mapacheee
 api-version: '1.21'
 folia-supported: false
-depend:
-  - MythicMobs
-  - Vault
-  - PlaceholderAPI
-
+dependencies:
+  server:
+    MythicMobs:
+      load: BEFORE
+      required: true
+      join-classpath: true
+    Vault:
+      load: BEFORE
+      required: false
+      join-classpath: true
+    PlaceholderAPI:
+      load: BEFORE
+      required: false
+      join-classpath: true

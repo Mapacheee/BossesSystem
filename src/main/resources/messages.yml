@@ -1,4 +1,4 @@
-prefix: "&#00BFFF[Bosses] "
+prefix: "<#00BFFF>[Bosses]<white> "
 errors:
   no-permission: "{prefix}No tienes permiso."
   player-only: "{prefix}Este comando es solo para jugadores."
@@ -8,6 +8,7 @@ errors:
   invalid-world: "{prefix}Mundo inválido: {world}"
   arena-exists: "{prefix}La arena {arena} ya existe."
   arena-occupied: "{prefix}La arena {arena} está ocupada."
+  arena-no-boss: "{prefix}La arena {arena} no tiene un boss configurado. Usa /boss:admin arena setboss {arena} (mythicMobId)"
   insufficient-balance: "{prefix}{player} no tiene saldo suficiente ({price})."
   max-players: "{prefix}No puedes invitar a más de {max} jugadores."
   pending-invites: "{prefix}Faltan jugadores por aceptar: {pending}"

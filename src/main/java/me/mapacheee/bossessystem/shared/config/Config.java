@@ -17,7 +17,6 @@ public record Config(
     Exit exit,
     Integrations integrations,
     Gui gui,
-    Map<String, Boss> bosses,
     Map<String, Arena> arenas
 ) {
 
@@ -28,7 +27,8 @@ public record Config(
       Invitation invitation,
       int defaultSpawnDelaySeconds,
       int defaultTimeLimitSeconds,
-      int defaultMaxPlayers
+      int defaultMaxPlayers,
+      double defaultPrice
   ) {}
 
   @ConfigSerializable
@@ -87,10 +87,15 @@ public record Config(
   }
 
   @ConfigSerializable
-  public record Boss(String mythicId, double price, int timeLimitSeconds, int maxPlayers, int spawnDelaySeconds) {}
-
-  @ConfigSerializable
-  public record Arena(String world, Spawn spawn, String bossId, Integer spawnDelaySeconds) {
+  public record Arena(
+      String world,
+      Spawn spawn,
+      String mythicMobId,
+      Double price,
+      Integer timeLimitSeconds,
+      Integer maxPlayers,
+      Integer spawnDelaySeconds
+  ) {
     @ConfigSerializable
     public record Spawn(double x, double y, double z, float yaw, float pitch) {}
   }
@@ -103,4 +108,3 @@ public record Config(
     }
   }
 }
-
