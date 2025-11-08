@@ -26,6 +26,18 @@ victory-effects:
     type: "entity_ender_dragon_death"
     volume: 1.0
     pitch: 1.0
+  fireworks:
+    enabled: true
+    count: 3
+    colors:
+      - "FFD700"
+      - "00FF7F"
+      - "FF1493"
+    types:
+      - "BALL_LARGE"
+      - "BURST"
+    with-trail: true
+    with-flicker: true
 exit:
   on-end:
     victory:

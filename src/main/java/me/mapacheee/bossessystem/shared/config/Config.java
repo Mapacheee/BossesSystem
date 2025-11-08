@@ -105,7 +105,8 @@ public record Config(
   public record VictoryEffects(
       int delayBeforeTeleportSeconds,
       Title title,
-      Sound sound
+      Sound sound,
+      Fireworks fireworks
   ) {
     @ConfigSerializable
     public record Title(
@@ -123,6 +124,16 @@ public record Config(
         String type,
         double volume,
         double pitch
+    ) {}
+
+    @ConfigSerializable
+    public record Fireworks(
+        boolean enabled,
+        int count,
+        List<String> colors,
+        List<String> types,
+        boolean withTrail,
+        boolean withFlicker
     ) {}
   }
 

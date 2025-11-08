@@ -220,6 +220,65 @@ public final class SessionService {
         }
       }
     }
+
+    if (victoryConfig.fireworks().enabled()) {
+      final var fireworksConfig = victoryConfig.fireworks();
+      for (final var uid : participants) {
+        final var p = Bukkit.getPlayer(uid);
+        if (p != null) {
+          this.spawnVictoryFireworks(p.getLocation(), fireworksConfig);
+        }
+      }
+    }
+  }
+
+  private void spawnVictoryFireworks(final org.bukkit.Location location, final Config.VictoryEffects.Fireworks config) {
+    final int count = config.count();
+    final var colors = config.colors();
+    final var types = config.types();
+    final boolean trail = config.withTrail();
+    final boolean flicker = config.withFlicker();
+
+    for (int i = 0; i < count; i++) {
+      Bukkit.getScheduler().runTaskLater(BossesSystemPlugin.get(), () -> {
+        final var firework = location.getWorld().spawn(location, org.bukkit.entity.Firework.class);
+        final var meta = firework.getFireworkMeta();
+
+        final var effect = org.bukkit.FireworkEffect.builder();
+
+        if (colors != null && !colors.isEmpty()) {
+          for (final var colorHex : colors) {
+            try {
+              final int rgb = Integer.parseInt(colorHex, 16);
+              final var color = org.bukkit.Color.fromRGB(rgb);
+              effect.withColor(color);
+            } catch (NumberFormatException ignored) {}
+          }
+        } else {
+          effect.withColor(org.bukkit.Color.YELLOW, org.bukkit.Color.LIME, org.bukkit.Color.FUCHSIA);
+        }
+
+        if (types != null && !types.isEmpty()) {
+          try {
+            final var type = org.bukkit.FireworkEffect.Type.valueOf(types.get(0));
+            effect.with(type);
+          } catch (IllegalArgumentException ignored) {
+            effect.with(org.bukkit.FireworkEffect.Type.BALL_LARGE);
+          }
+        } else {
+          effect.with(org.bukkit.FireworkEffect.Type.BALL_LARGE);
+        }
+
+        if (trail) effect.withTrail();
+        if (flicker) effect.withFlicker();
+
+        meta.addEffect(effect.build());
+        meta.setPower(1);
+        firework.setFireworkMeta(meta);
+
+        Bukkit.getScheduler().runTaskLater(BossesSystemPlugin.get(), firework::detonate, 1L);
+      }, i * 10L);
+    }
   }
 
   private void endSession(final String arenaId, final Session session, final String result, final long durationMillis, final List<UUID> participants) {
