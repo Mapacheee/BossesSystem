@@ -33,11 +33,6 @@ public final class ConfigPersistenceService {
     logger.debug("Guardando arena '{}' con mythicMobId: '{}'", id, arena.mythicMobId());
 
     try {
-      Map<String, Config.Arena> arenas = this.config.get().arenas();
-      if (arenas != null) {
-        arenas.put(id, arena);
-      }
-
       var arenaNode = config.getNode().node("arenas", id);
 
       arenaNode.node("world").set(arena.world());
@@ -51,7 +46,7 @@ public final class ConfigPersistenceService {
       }
 
       if (arena.mythicMobId() != null && !arena.mythicMobId().isEmpty()) {
-        arenaNode.node("mythicMobId").set(arena.mythicMobId());
+        arenaNode.node("mythic-mob-id").set(arena.mythicMobId());
       }
 
       if (arena.price() != null) {
@@ -59,20 +54,23 @@ public final class ConfigPersistenceService {
       }
 
       if (arena.timeLimitSeconds() != null) {
-        arenaNode.node("timeLimitSeconds").set(arena.timeLimitSeconds());
+        arenaNode.node("time-limit-seconds").set(arena.timeLimitSeconds());
       }
 
       if (arena.maxPlayers() != null) {
-        arenaNode.node("maxPlayers").set(arena.maxPlayers());
+        arenaNode.node("max-players").set(arena.maxPlayers());
       }
 
       if (arena.spawnDelaySeconds() != null) {
-        arenaNode.node("spawnDelaySeconds").set(arena.spawnDelaySeconds());
+        arenaNode.node("spawn-delay-seconds").set(arena.spawnDelaySeconds());
       }
 
       boolean saved = config.save();
 
-      if (!saved) {
+      if (saved) {
+        config.reload();
+        logger.debug("Arena '{}' guardada y recargada exitosamente", id);
+      } else {
         logger.error("Error al guardar arena '{}' al archivo", id);
       }
 
