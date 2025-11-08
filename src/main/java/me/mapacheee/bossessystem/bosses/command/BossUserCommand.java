@@ -15,7 +15,6 @@ import org.incendo.cloud.annotations.Default;
 import org.incendo.cloud.annotations.Permission;
 import org.incendo.cloud.paper.util.sender.Source;
 
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @CommandComponent
