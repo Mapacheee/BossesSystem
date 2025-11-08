@@ -12,6 +12,20 @@ spectators:
   enabled: true
   gamemode: SPECTATOR
   restore-previous-gamemode: true
+victory-effects:
+  delay-before-teleport-seconds: 5
+  title:
+    enabled: true
+    main: "<#FFD700><bold>¡VICTORIA!"
+    subtitle: "<#00FF7F>Has derrotado al boss"
+    fade-in: 10
+    stay: 70
+    fade-out: 20
+  sound:
+    enabled: true
+    type: "entity_ender_dragon_death"
+    volume: 1.0
+    pitch: 1.0
 exit:
   on-end:
     victory:

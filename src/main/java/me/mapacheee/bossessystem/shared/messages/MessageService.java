@@ -6,9 +6,12 @@ import com.thewinterframework.service.annotation.Service;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.title.Title;
+import org.bukkit.Registry;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.time.Duration;
 import java.util.Map;
 
 @Service
@@ -233,5 +236,35 @@ public final class MessageService {
         "boss", boss,
         "delay", delay
     ));
+  }
+
+  public void sendTitle(final Player player, final String main, final String subtitle,
+                       final int fadeInTicks, final int stayTicks, final int fadeOutTicks) {
+    final var mainComponent = this.formatRaw(main, null);
+    final var subtitleComponent = this.formatRaw(subtitle, null);
+
+    final var times = Title.Times.times(
+        Duration.ofMillis(fadeInTicks * 50L),
+        Duration.ofMillis(stayTicks * 50L),
+        Duration.ofMillis(fadeOutTicks * 50L)
+    );
+
+    final var title = Title.title(mainComponent, subtitleComponent, times);
+    player.showTitle(title);
+  }
+
+  public void playSound(final Player player, final String soundName, final float volume, final float pitch) {
+    try {
+      final var sound = Registry.SOUNDS.get(org.bukkit.NamespacedKey.minecraft(soundName.toLowerCase()));
+      if (sound != null) {
+        player.playSound(player.getLocation(), sound, volume, pitch);
+      }
+    } catch (IllegalArgumentException ignored) {}
+  }
+
+  public void sendVictoryTitle(final Player player, final int fadeInTicks, final int stayTicks, final int fadeOutTicks) {
+    final var mainText = this.resolve("end", "victory-title-main");
+    final var subtitleText = this.resolve("end", "victory-title-subtitle");
+    this.sendTitle(player, mainText, subtitleText, fadeInTicks, stayTicks, fadeOutTicks);
   }
 }

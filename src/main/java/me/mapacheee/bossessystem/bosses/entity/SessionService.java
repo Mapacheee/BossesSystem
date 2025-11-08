@@ -165,14 +165,11 @@ public final class SessionService {
   }
 
   public void onBossDeath(final UUID bossUuid) {
-    logger.debug("onBossDeath called with UUID: {}", bossUuid);
-
     final var entry = this.sessionsByArena.entrySet().stream()
         .filter(e -> Objects.equals(e.getValue().bossUuid, bossUuid))
         .findFirst().orElse(null);
 
     if (entry == null) {
-      logger.debug("No session found for boss UUID: {}", bossUuid);
       return;
     }
 
@@ -180,11 +177,53 @@ public final class SessionService {
     final var session = entry.getValue();
     logger.info("Boss defeated in arena '{}' - Victory!", arenaId);
 
-    final long duration = session.startMillis > 0 ? System.currentTimeMillis() - session.startMillis : 0L;
-    this.endSession(arenaId, session, "victory", duration, new ArrayList<>(session.participants));
+    // Reproducir efectos de victoria ANTES de terminar sesión
+    this.playVictoryEffects(arenaId, session);
 
-    final var leader = Bukkit.getPlayer(session.leader);
-    this.stats.recordVictory(session.bossId, duration, leader != null ? leader.getName() : "");
+    // Programar el fin de sesión después del delay configurado
+    final var victoryConfig = this.config.get().victoryEffects();
+    final int delaySeconds = victoryConfig.delayBeforeTeleportSeconds();
+
+    Bukkit.getScheduler().runTaskLater(
+        BossesSystemPlugin.get(),
+        () -> {
+          final long duration = session.startMillis > 0
+              ? System.currentTimeMillis() - session.startMillis
+              : 0L;
+          this.endSession(arenaId, session, "victory", duration, new ArrayList<>(session.participants));
+
+          final var leader = Bukkit.getPlayer(session.leader);
+          this.stats.recordVictory(session.bossId, duration, leader != null ? leader.getName() : "");
+        },
+        delaySeconds * 20L
+    );
+  }
+
+  private void playVictoryEffects(final String arenaId, final Session session) {
+    final var victoryConfig = this.config.get().victoryEffects();
+    final var participants = session.participants;
+
+    // Reproducir sonido para todos los participantes
+    if (victoryConfig.sound().enabled()) {
+      final var soundConfig = victoryConfig.sound();
+      for (final var uid : participants) {
+        final var p = Bukkit.getPlayer(uid);
+        if (p != null) {
+          this.messages.playSound(p, soundConfig.type(), (float) soundConfig.volume(), (float) soundConfig.pitch());
+        }
+      }
+    }
+
+    // Mostrar título a todos los participantes
+    if (victoryConfig.title().enabled()) {
+      final var titleConfig = victoryConfig.title();
+      for (final var uid : participants) {
+        final var p = Bukkit.getPlayer(uid);
+        if (p != null) {
+          this.messages.sendVictoryTitle(p, titleConfig.fadeIn(), titleConfig.stay(), titleConfig.fadeOut());
+        }
+      }
+    }
   }
 
   private void endSession(final String arenaId, final Session session, final String result, final long durationMillis, final List<UUID> participants) {

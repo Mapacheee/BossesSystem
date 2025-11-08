@@ -14,6 +14,7 @@ import java.util.Map;
 public record Config(
     General general,
     Spectators spectators,
+    VictoryEffects victoryEffects,
     Exit exit,
     Integrations integrations,
     Gui gui,
@@ -98,6 +99,31 @@ public record Config(
   ) {
     @ConfigSerializable
     public record Spawn(double x, double y, double z, float yaw, float pitch) {}
+  }
+
+  @ConfigSerializable
+  public record VictoryEffects(
+      int delayBeforeTeleportSeconds,
+      Title title,
+      Sound sound
+  ) {
+    @ConfigSerializable
+    public record Title(
+        boolean enabled,
+        String main,
+        String subtitle,
+        int fadeIn,
+        int stay,
+        int fadeOut
+    ) {}
+
+    @ConfigSerializable
+    public record Sound(
+        boolean enabled,
+        String type,
+        double volume,
+        double pitch
+    ) {}
   }
 
   @ConfigurateSerializerProvider

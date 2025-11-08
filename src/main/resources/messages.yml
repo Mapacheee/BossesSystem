@@ -33,6 +33,8 @@ flow:
   rejoin-spectator: "{prefix}Has reingresado como espectador."
 end:
   victory: "{prefix}¡Victoria! Tiempo: {duration}"
+  victory-title-main: "<#FFD700><bold>¡VICTORIA!"
+  victory-title-subtitle: "<#00FF7F>Has derrotado al boss"
   timeup: "{prefix}Tiempo agotado. ¡Inténtalo de nuevo!"
   session-ended: "{prefix}Sesión finalizada."
   cancelled: "{prefix}Sesión cancelada. No se realizaron cobros."
