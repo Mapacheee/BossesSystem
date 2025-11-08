@@ -177,10 +177,8 @@ public final class SessionService {
     final var session = entry.getValue();
     logger.info("Boss defeated in arena '{}' - Victory!", arenaId);
 
-    // Reproducir efectos de victoria ANTES de terminar sesión
     this.playVictoryEffects(arenaId, session);
 
-    // Programar el fin de sesión después del delay configurado
     final var victoryConfig = this.config.get().victoryEffects();
     final int delaySeconds = victoryConfig.delayBeforeTeleportSeconds();
 
@@ -203,7 +201,6 @@ public final class SessionService {
     final var victoryConfig = this.config.get().victoryEffects();
     final var participants = session.participants;
 
-    // Reproducir sonido para todos los participantes
     if (victoryConfig.sound().enabled()) {
       final var soundConfig = victoryConfig.sound();
       for (final var uid : participants) {
@@ -214,7 +211,6 @@ public final class SessionService {
       }
     }
 
-    // Mostrar título a todos los participantes
     if (victoryConfig.title().enabled()) {
       final var titleConfig = victoryConfig.title();
       for (final var uid : participants) {
