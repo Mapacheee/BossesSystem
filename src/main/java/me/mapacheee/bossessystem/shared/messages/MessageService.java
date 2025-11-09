@@ -189,8 +189,16 @@ public final class MessageService {
     this.sendKey(player, "flow", "rejoin-success", tags());
   }
 
+  public void flowPlayerDied(final Player player) {
+    this.sendKey(player, "flow", "player-died", tags());
+  }
+
   public void flowRejoinSpectator(final Player player) {
     this.sendKey(player, "flow", "rejoin-spectator", tags());
+  }
+
+  public void flowCancelledInsufficientBalance(final CommandSender sender, final String player, final String price) {
+    this.sendKey(sender, "flow", "cancelled-insufficient-balance", tags("player", player, "price", price));
   }
 
   public void endCancelled(final CommandSender sender) {

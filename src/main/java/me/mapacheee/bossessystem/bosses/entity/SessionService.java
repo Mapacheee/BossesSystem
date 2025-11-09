@@ -99,7 +99,7 @@ public final class SessionService {
 
     for (final var p : online) {
       if (!this.economy.has(p, price)) {
-        this.messages.errorInsufficientBalance(p, p.getName(), String.valueOf(price));
+        this.sendTo(participants, player -> this.messages.flowCancelledInsufficientBalance(player, p.getName(), String.valueOf(price)));
         return;
       }
     }
@@ -356,7 +356,7 @@ public final class SessionService {
     session.participants.remove(player.getUniqueId());
     session.spectators.add(player.getUniqueId());
     this.deadOrSpectator.add(player.getUniqueId());
-    this.messages.flowRejoinSpectator(player);
+    this.messages.flowPlayerDied(player);
     if (session.participants.isEmpty()) {
       this.timeout(session.arenaId);
     }

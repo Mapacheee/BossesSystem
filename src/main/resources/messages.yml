@@ -30,7 +30,9 @@ flow:
   fight-started: "{prefix}¡El combate ha comenzado!"
   rejoin-available: "{prefix}Puedes reingresar con /boss rejoin (expira en {seconds}s)."
   rejoin-success: "{prefix}Has reingresado a la sesión."
+  player-died: "{prefix}<#FF6B6B>¡Has muerto! <white>Usa <#FFD700>/boss rejoin<white> para unirte como espectador y seguir viendo la batalla."
   rejoin-spectator: "{prefix}Has reingresado como espectador."
+  cancelled-insufficient-balance: "{prefix}<#FF6B6B>Combate cancelado: <white>{player} no tiene dinero suficiente ({price})."
 end:
   victory: "{prefix}¡Victoria! Tiempo: {duration}"
   victory-title-main: "<#FFD700><bold>¡VICTORIA!"
