@@ -128,8 +128,8 @@ public final class SessionService {
     final Location spawn = new Location(world, arenaCfg.spawn().x(), arenaCfg.spawn().y(), arenaCfg.spawn().z(), arenaCfg.spawn().yaw(), arenaCfg.spawn().pitch());
     final long timeLimit = this.bosses.getTimeLimitSeconds(arenaCfg);
     final Session session = new Session(arenaId, arenaCfg.mythicMobId(), participants.getFirst(), timeLimit, spawn);
-    session.participants.addAll(participants);
-    session.price = price;
+    session.getParticipants().addAll(participants);
+    session.setPrice(price);
     this.sessionsByArena.put(arenaId, session);
     participants.forEach(uid -> this.playerToArena.put(uid, arenaId));
 
@@ -146,8 +146,8 @@ public final class SessionService {
 
     Bukkit.getScheduler().runTaskLater(BossesSystemPlugin.get(), () -> {
       final var uuid = this.mythic.spawn(arenaCfg.mythicMobId(), spawn);
-      session.startMillis = System.currentTimeMillis();
-      session.bossUuid = uuid;
+      session.setStartMillis(System.currentTimeMillis());
+      session.setBossUuid(uuid);
       this.sendTo(participants, this.messages::flowFightStarted);
       final long ticks = timeLimit * 20L;
       final var task = Bukkit.getScheduler().runTaskLater(BossesSystemPlugin.get(), () -> this.timeout(arenaId), ticks);
@@ -158,15 +158,15 @@ public final class SessionService {
   private void timeout(final String arenaId) {
     final var session = this.sessionsByArena.get(arenaId);
     if (session == null) return;
-    this.mythic.despawn(session.bossUuid);
-    final var players = new ArrayList<>(session.participants);
-    final long duration = session.startMillis > 0 ? System.currentTimeMillis() - session.startMillis : 0L;
+    this.mythic.despawn(session.getBossUuid());
+    final var players = new ArrayList<>(session.getParticipants());
+    final long duration = session.getStartMillis() > 0 ? System.currentTimeMillis() - session.getStartMillis() : 0L;
     this.endSession(arenaId, session, "timeout", duration, players);
   }
 
   public void onBossDeath(final UUID bossUuid) {
     final var entry = this.sessionsByArena.entrySet().stream()
-        .filter(e -> Objects.equals(e.getValue().bossUuid, bossUuid))
+        .filter(e -> Objects.equals(e.getValue().getBossUuid(), bossUuid))
         .findFirst().orElse(null);
 
     if (entry == null) {
@@ -185,13 +185,13 @@ public final class SessionService {
     Bukkit.getScheduler().runTaskLater(
         BossesSystemPlugin.get(),
         () -> {
-          final long duration = session.startMillis > 0
-              ? System.currentTimeMillis() - session.startMillis
+          final long duration = session.getStartMillis() > 0
+              ? System.currentTimeMillis() - session.getStartMillis()
               : 0L;
-          this.endSession(arenaId, session, "victory", duration, new ArrayList<>(session.participants));
+          this.endSession(arenaId, session, "victory", duration, new ArrayList<>(session.getParticipants()));
 
-          final var leader = Bukkit.getPlayer(session.leader);
-          this.stats.recordVictory(session.bossId, duration, leader != null ? leader.getName() : "");
+          final var leader = Bukkit.getPlayer(session.getLeader());
+          this.stats.recordVictory(session.getBossId(), duration, leader != null ? leader.getName() : "");
         },
         delaySeconds * 20L
     );
@@ -199,7 +199,7 @@ public final class SessionService {
 
   private void playVictoryEffects(final String arenaId, final Session session) {
     final var victoryConfig = this.config.get().victoryEffects();
-    final var participants = session.participants;
+    final var participants = session.getParticipants();
 
     if (victoryConfig.sound().enabled()) {
       final var soundConfig = victoryConfig.sound();
@@ -286,11 +286,11 @@ public final class SessionService {
     if (task != null) task.cancel();
 
     final List<UUID> allPlayers = new ArrayList<>(participants);
-    allPlayers.addAll(session.spectators);
+    allPlayers.addAll(session.getSpectators());
 
-    this.teleport.executeEndCommands(result, arenaId, session.bossId, durationMillis, session.leader, allPlayers);
+    this.teleport.executeEndCommands(result, arenaId, session.getBossId(), durationMillis, session.getLeader(), allPlayers);
 
-    for (final var uid : session.spectators) {
+    for (final var uid : session.getSpectators()) {
       final var sp = Bukkit.getPlayer(uid);
       if (sp != null) this.teleport.restoreGamemode(sp);
     }
@@ -298,8 +298,8 @@ public final class SessionService {
     this.sessionsByArena.remove(arenaId);
     this.arenas.setOccupied(arenaId, false);
     participants.forEach(this.playerToArena::remove);
-    session.spectators.forEach(this.playerToArena::remove);
-    this.deadOrSpectator.removeAll(session.spectators);
+    session.getSpectators().forEach(this.playerToArena::remove);
+    this.deadOrSpectator.removeAll(session.getSpectators());
   }
 
   private interface PlayerMessage {
@@ -324,11 +324,11 @@ public final class SessionService {
       final boolean expired = still != null && System.currentTimeMillis() >= still;
       final boolean stillInSession = this.getSessionByPlayer(player.getUniqueId()) != null;
       if (expired && stillInSession) {
-        session.participants.remove(player.getUniqueId());
+        session.getParticipants().remove(player.getUniqueId());
         this.playerToArena.remove(player.getUniqueId());
-        this.economy.deposit(player, session.price);
-        if (session.participants.isEmpty()) {
-          this.timeout(session.arenaId);
+        this.economy.deposit(player, session.getPrice());
+        if (session.getParticipants().isEmpty()) {
+          this.timeout(session.getArenaId());
         }
       }
       this.rejoinDeadline.remove(player.getUniqueId());
@@ -344,8 +344,8 @@ public final class SessionService {
       return;
     }
     final var session = this.getSessionByPlayer(player.getUniqueId());
-    if (session != null && session.participants.contains(player.getUniqueId())) {
-      this.teleport.teleportTo(player, session.arenaSpawn);
+    if (session != null && session.getParticipants().contains(player.getUniqueId())) {
+      this.teleport.teleportTo(player, session.getArenaSpawn());
       this.messages.flowRejoinSuccess(player);
     }
   }
@@ -353,12 +353,12 @@ public final class SessionService {
   public void handlePlayerDeath(final Player player) {
     final var session = this.getSessionByPlayer(player.getUniqueId());
     if (session == null) return;
-    session.participants.remove(player.getUniqueId());
-    session.spectators.add(player.getUniqueId());
+    session.getParticipants().remove(player.getUniqueId());
+    session.getSpectators().add(player.getUniqueId());
     this.deadOrSpectator.add(player.getUniqueId());
     this.messages.flowPlayerDied(player);
-    if (session.participants.isEmpty()) {
-      this.timeout(session.arenaId);
+    if (session.getParticipants().isEmpty()) {
+      this.timeout(session.getArenaId());
     }
   }
 
@@ -370,11 +370,11 @@ public final class SessionService {
     }
     if (this.deadOrSpectator.contains(player.getUniqueId())) {
       this.teleport.setSpectator(player);
-      final var boss = session.bossUuid != null ? Bukkit.getEntity(session.bossUuid) : null;
-      this.teleport.teleportTo(player, boss != null ? boss.getLocation() : session.arenaSpawn);
+      final var boss = session.getBossUuid() != null ? Bukkit.getEntity(session.getBossUuid()) : null;
+      this.teleport.teleportTo(player, boss != null ? boss.getLocation() : session.getArenaSpawn());
       return;
     }
-    this.teleport.teleportTo(player, session.arenaSpawn);
+    this.teleport.teleportTo(player, session.getArenaSpawn());
     this.messages.flowRejoinSuccess(player);
   }
 
@@ -384,29 +384,29 @@ public final class SessionService {
       this.messages.errorInvalidArena(player, arenaId);
       return;
     }
-    session.spectators.add(player.getUniqueId());
+    session.getSpectators().add(player.getUniqueId());
     this.teleport.setSpectator(player);
-    final var boss = session.bossUuid != null ? Bukkit.getEntity(session.bossUuid) : null;
-    this.teleport.teleportTo(player, boss != null ? boss.getLocation() : session.arenaSpawn);
+    final var boss = session.getBossUuid() != null ? Bukkit.getEntity(session.getBossUuid()) : null;
+    this.teleport.teleportTo(player, boss != null ? boss.getLocation() : session.getArenaSpawn());
   }
 
   public int activePlayersInArena(final String arenaId) {
     final var s = this.sessionsByArena.get(arenaId);
-    return s == null ? 0 : s.participants.size();
+    return s == null ? 0 : s.getParticipants().size();
   }
 
   public void leaveCommand(final Player player) {
     final var session = this.getSessionByPlayer(player.getUniqueId());
     if (session == null) return;
-    if (session.spectators.remove(player.getUniqueId())) {
+    if (session.getSpectators().remove(player.getUniqueId())) {
       this.teleport.restoreGamemode(player);
       this.playerToArena.remove(player.getUniqueId());
       return;
     }
-    if (session.participants.remove(player.getUniqueId())) {
+    if (session.getParticipants().remove(player.getUniqueId())) {
       this.playerToArena.remove(player.getUniqueId());
-      if (session.participants.isEmpty()) {
-        this.timeout(session.arenaId);
+      if (session.getParticipants().isEmpty()) {
+        this.timeout(session.getArenaId());
       }
     }
   }
