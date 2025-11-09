@@ -18,8 +18,6 @@ import org.incendo.cloud.paper.util.sender.Source;
 import java.util.stream.Collectors;
 
 @CommandComponent
-@Command("boss|bosses")
-@Permission("bossesystem.use")
 public final class BossUserCommand {
 
   private final InvitesGui invitesGui;
@@ -37,7 +35,8 @@ public final class BossUserCommand {
     this.sessions = sessions;
   }
 
-  @Command("arenas")
+  @Command("boss|bosses arenas")
+  @Permission("bossesystem.use.arenas")
   public void arenas(final Source sender) {
     final var ids = this.arenas.arenaIds();
     final var list = ids.isEmpty() ? "-" : ids.stream()
@@ -46,7 +45,8 @@ public final class BossUserCommand {
     this.messages.flowArenasList(sender.source(), list);
   }
 
-  @Command("select <arenaId>")
+  @Command("boss|bosses select <arenaId>")
+  @Permission("bossesystem.use.select")
   public void select(final Source sender, final @Argument("arenaId") String arenaId) {
     if (!(sender.source() instanceof Player p)) {
       this.messages.errorPlayerOnly(sender.source());
@@ -65,7 +65,8 @@ public final class BossUserCommand {
     this.invitesGui.open(p, arenaId);
   }
 
-  @Command("accept")
+  @Command("boss|bosses accept")
+  @Permission("bossesystem.use.accept")
   public void accept(final Source sender) {
     if (!(sender.source() instanceof Player p)) {
       this.messages.errorPlayerOnly(sender.source());
@@ -74,7 +75,8 @@ public final class BossUserCommand {
     this.parties.accept(p);
   }
 
-  @Command("reject")
+  @Command("boss|bosses reject")
+  @Permission("bossesystem.use.reject")
   public void reject(final Source sender) {
     if (!(sender.source() instanceof Player p)) {
       this.messages.errorPlayerOnly(sender.source());
@@ -83,29 +85,32 @@ public final class BossUserCommand {
     this.parties.reject(p);
   }
 
-  @Command("leave")
+  @Command("boss|bosses leave")
+  @Permission("bossesystem.use.leave")
   public void leave(final Source sender) {
     if (sender.source() instanceof Player p) {
       this.sessions.leaveCommand(p);
     }
   }
 
-  @Command("rejoin")
+  @Command("boss|bosses rejoin")
+  @Permission("bossesystem.use.rejoin")
   public void rejoin(final Source sender) {
     if (sender.source() instanceof Player p) {
       this.sessions.rejoinCommand(p);
     }
   }
 
-  @Command("spectate <arenaId>")
-  @Permission("bossesystem.spectate")
+  @Command("boss|bosses spectate <arenaId>")
+  @Permission("bossesystem.use.spectate")
   public void spectate(final Source sender, final @Argument("arenaId") String arenaId) {
     if (sender.source() instanceof Player p) {
       this.sessions.spectateCommand(p, arenaId);
     }
   }
 
-  @Command("stats [bossId]")
+  @Command("boss|bosses stats [bossId]")
+  @Permission("bossesystem.use.stats")
   public void stats(final Source sender, final @Default("") @Argument("bossId") String bossId) {
     if (bossId == null || bossId.isBlank()) {
       sender.source().sendMessage(ComponentUtils.miniMessage("<gray>Mostrando estadísticas generales..."));

@@ -17,8 +17,6 @@ import org.incendo.cloud.annotations.Permission;
 import org.incendo.cloud.paper.util.sender.Source;
 
 @CommandComponent
-@Command("bossadmin|bossesadmin|bosses:admin|boss:admin")
-@Permission("bossesystem.admin")
 public final class BossAdminCommand {
 
   private final Container<Config> config;
@@ -40,7 +38,8 @@ public final class BossAdminCommand {
     this.reloadServiceManager = reloadServiceManager;
   }
 
-  @Command("reload")
+  @Command("bossadmin|bossesadmin|bosses:admin|boss:admin reload")
+  @Permission("bossesystem.admin.reload")
   public void reload(final Source sender) {
     this.reloadServiceManager.reload();
     this.config.reload();
@@ -48,14 +47,16 @@ public final class BossAdminCommand {
     this.messages.adminReloadOk(sender.source());
   }
 
-  @Command("arena list")
+  @Command("bossadmin|bossesadmin|bosses:admin|boss:admin arena list")
+  @Permission("bossesystem.admin.arena.list")
   public void list(final Source sender) {
     final var arenas = this.config.get().arenas();
     final var keys = arenas == null || arenas.isEmpty() ? "-" : String.join(", ", arenas.keySet());
     sender.source().sendMessage(ComponentUtils.miniMessage("<gray>Arenas: <white>" + keys + "</white>"));
   }
 
-  @Command("arena info <id>")
+  @Command("bossadmin|bossesadmin|bosses:admin|boss:admin arena info <id>")
+  @Permission("bossesystem.admin.arena.info")
   public void info(final Source sender, final @Argument("id") String id) {
     final var arenas = this.config.get().arenas();
     if (arenas == null || !arenas.containsKey(id)) {
@@ -98,7 +99,8 @@ public final class BossAdminCommand {
     ));
   }
 
-  @Command("arena create <id> <world> <x> <y> <z> [yaw] [pitch]")
+  @Command("bossadmin|bossesadmin|bosses:admin|boss:admin arena create <id> <world> <x> <y> <z> [yaw] [pitch]")
+  @Permission("bossesystem.admin.arena.create")
   public void create(final Source sender,
                      final @Argument("id") String id,
                      final @Argument("world") String world,
@@ -128,7 +130,8 @@ public final class BossAdminCommand {
     this.sendArenaInfo(sender, id, arenaObj);
   }
 
-  @Command("arena createhere <id>")
+  @Command("bossadmin|bossesadmin|bosses:admin|boss:admin arena createhere <id>")
+  @Permission("bossesystem.admin.arena.create")
   public void createHere(final Source sender, final @Argument("id") String id) {
     if (!(sender.source() instanceof Player p)) {
       this.messages.errorPlayerOnly(sender.source());
@@ -157,7 +160,8 @@ public final class BossAdminCommand {
     this.sendArenaInfo(sender, id, arenaObj);
   }
 
-  @Command("arena clone <fromId> <toId>")
+  @Command("bossadmin|bossesadmin|bosses:admin|boss:admin arena clone <fromId> <toId>")
+  @Permission("bossesystem.admin.arena.clone")
   public void cloneArena(final Source sender,
                          final @Argument("fromId") String fromId,
                          final @Argument("toId") String toId) {
@@ -182,7 +186,8 @@ public final class BossAdminCommand {
     this.sendArenaInfo(sender, toId, clone);
   }
 
-  @Command("arena setspawn <id> <x> <y> <z> [yaw] [pitch]")
+  @Command("bossadmin|bossesadmin|bosses:admin|boss:admin arena setspawn <id> <x> <y> <z> [yaw] [pitch]")
+  @Permission("bossesystem.admin.arena.setspawn")
   public void setSpawn(final Source sender,
                        final @Argument("id") String id,
                        final @Argument("x") double x,
@@ -207,7 +212,8 @@ public final class BossAdminCommand {
     this.sendArenaInfo(sender, id, updated);
   }
 
-  @Command("arena setspawnhere <id>")
+  @Command("bossadmin|bossesadmin|bosses:admin|boss:admin arena setspawnhere <id>")
+  @Permission("bossesystem.admin.arena.setspawn")
   public void setSpawnHere(final Source sender, final @Argument("id") String id) {
     if (!(sender.source() instanceof Player p)) {
       this.messages.errorPlayerOnly(sender.source());
@@ -233,7 +239,8 @@ public final class BossAdminCommand {
     this.sendArenaInfo(sender, id, updated);
   }
 
-  @Command("arena setboss <id> <mythicMobId>")
+  @Command("bossadmin|bossesadmin|bosses:admin|boss:admin arena setboss <id> <mythicMobId>")
+  @Permission("bossesystem.admin.arena.setboss")
   public void setBoss(final Source sender,
                       final @Argument("id") String id,
                       final @Argument("mythicMobId") String mythicMobId) {
@@ -260,7 +267,8 @@ public final class BossAdminCommand {
     this.sendArenaInfo(sender, id, updated);
   }
 
-  @Command("arena setprice <id> <price>")
+  @Command("bossadmin|bossesadmin|bosses:admin|boss:admin arena setprice <id> <price>")
+  @Permission("bossesystem.admin.arena.setprice")
   public void setPrice(final Source sender,
                        final @Argument("id") String id,
                        final @Argument("price") double price) {
@@ -277,7 +285,8 @@ public final class BossAdminCommand {
     this.sendArenaInfo(sender, id, updated);
   }
 
-  @Command("arena settimeout <id> <seconds>")
+  @Command("bossadmin|bossesadmin|bosses:admin|boss:admin arena settimeout <id> <seconds>")
+  @Permission("bossesystem.admin.arena.settimeout")
   public void setTimeout(final Source sender,
                          final @Argument("id") String id,
                          final @Argument("seconds") int seconds) {
@@ -294,7 +303,8 @@ public final class BossAdminCommand {
     this.sendArenaInfo(sender, id, updated);
   }
 
-  @Command("arena setmaxplayers <id> <maxPlayers>")
+  @Command("bossadmin|bossesadmin|bosses:admin|boss:admin arena setmaxplayers <id> <maxPlayers>")
+  @Permission("bossesystem.admin.arena.setmaxplayers")
   public void setMaxPlayers(final Source sender,
                             final @Argument("id") String id,
                             final @Argument("maxPlayers") int maxPlayers) {
@@ -311,7 +321,8 @@ public final class BossAdminCommand {
     this.sendArenaInfo(sender, id, updated);
   }
 
-  @Command("arena setdelay <id> <seconds>")
+  @Command("bossadmin|bossesadmin|bosses:admin|boss:admin arena setdelay <id> <seconds>")
+  @Permission("bossesystem.admin.arena.setdelay")
   public void setDelay(final Source sender,
                        final @Argument("id") String id,
                        final @Argument("seconds") int seconds) {
@@ -328,7 +339,8 @@ public final class BossAdminCommand {
     this.sendArenaInfo(sender, id, updated);
   }
 
-  @Command("arena delete <id>")
+  @Command("bossadmin|bossesadmin|bosses:admin|boss:admin arena delete <id>")
+  @Permission("bossesystem.admin.arena.delete")
   public void delete(final Source sender, final @Argument("id") String id) {
     final var arenas = this.config.get().arenas();
     if (arenas != null) arenas.remove(id);
