@@ -9,7 +9,6 @@ import me.mapacheee.bossessystem.bosses.entity.BossRegistryService;
 import me.mapacheee.bossessystem.bosses.entity.PartyService;
 import me.mapacheee.bossessystem.shared.config.Config;
 import me.mapacheee.bossessystem.shared.messages.MessageService;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -17,7 +16,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.*;
@@ -60,11 +58,11 @@ public final class InvitesGui {
 
   public void open(final Player leader, final String arenaId) {
     final var cfg = this.config.get().gui().invites();
-    final int rows = Math.max(1, Math.min(cfg.rows(), 6));
-    final int size = rows * 9;
-    final Component title = ComponentUtils.miniMessage(cfg.title());
+    final var rows = Math.max(1, Math.min(cfg.rows(), 6));
+    final var size = rows * 9;
+    final var title = ComponentUtils.miniMessage(cfg.title());
     this.stateByLeader.put(leader.getUniqueId(), new State(arenaId, new HashSet<>(), 0));
-    final Inventory inv = Bukkit.createInventory(new Holder(leader.getUniqueId(), arenaId), size, title);
+    final var inv = Bukkit.createInventory(new Holder(leader.getUniqueId(), arenaId), size, title);
     this.render(inv, leader.getUniqueId());
     leader.openInventory(inv);
   }
@@ -90,9 +88,9 @@ public final class InvitesGui {
       return;
     }
     final int start = cfg.slots().playersStartSlot();
-    final int pageSize = cfg.pageSize();
+    final var pageSize = cfg.pageSize();
     if (slot < start) return;
-    final int index = slot - start + (state.page() * pageSize);
+    final var index = slot - start + (state.page() * pageSize);
     final var candidates = this.buildCandidates(holder.leader, state.arenaId());
     if (index < 0 || index >= candidates.size()) return;
     final UUID target = candidates.get(index).getUniqueId();
@@ -113,7 +111,7 @@ public final class InvitesGui {
   }
 
   private void confirm(final Player leader, final String arenaId, final Set<UUID> selected) {
-    final List<Player> players = selected.stream()
+    final var players = selected.stream()
         .map(Bukkit::getPlayer)
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
@@ -122,11 +120,11 @@ public final class InvitesGui {
 
     if (!players.isEmpty()) {
       this.messages.flowInvitesSent(leader,
-          players.stream().map(Player::getName).collect(Collectors.joining(", ")),
+          players.stream().filter(Objects::nonNull).map(Player::getName).collect(Collectors.joining(", ")),
           this.config.get().general().invitation().autoExpireSeconds());
 
       final var arena = this.arenas.getArena(arenaId);
-      final String bossId = arena != null ? arena.mythicMobId() : "";
+      final var bossId = arena != null ? arena.mythicMobId() : "";
       for (final var p : players) {
         this.messages.flowInviteReceived(p, leader.getName(), bossId, arenaId, this.config.get().general().invitation().autoExpireSeconds());
       }
@@ -147,11 +145,11 @@ public final class InvitesGui {
     final var state = this.stateByLeader.get(leader);
     if (state == null) return;
 
-    final int start = cfg.slots().playersStartSlot();
-    final int pageSize = cfg.pageSize();
+    final var start = cfg.slots().playersStartSlot();
+    final var pageSize = cfg.pageSize();
     final var all = this.buildCandidates(leader, state.arenaId());
-    final int from = state.page() * pageSize;
-    final int to = Math.min(from + pageSize, all.size());
+    final var from = state.page() * pageSize;
+    final var to = Math.min(from + pageSize, all.size());
     final var page = all.subList(from, to);
 
     int slot = start;
@@ -171,8 +169,8 @@ public final class InvitesGui {
 
   private ItemStack playerHead(final OfflinePlayer player, final boolean selected) {
     final var cfg = this.config.get().gui().invites();
-    final ItemStack head = new ItemStack(Material.PLAYER_HEAD);
-    final SkullMeta meta = (SkullMeta) head.getItemMeta();
+    final var head = new ItemStack(Material.PLAYER_HEAD);
+    final var meta = (SkullMeta) head.getItemMeta();
     meta.setOwningPlayer(player);
     meta.displayName(ComponentUtils.miniMessage(cfg.items().player().name().replace("{player}", player.getName() == null ? "Player" : player.getName())));
     final var loreList = selected ? cfg.items().player().loreSelected() : cfg.items().player().loreUnselected();
@@ -186,8 +184,8 @@ public final class InvitesGui {
 
   private ItemStack confirmItem(final int selectedCount) {
     final var cfg = this.config.get().gui().invites();
-    final ItemStack item = new ItemStack(Objects.requireNonNull(Material.matchMaterial(cfg.items().confirm().material())));
-    final ItemMeta meta = item.getItemMeta();
+    final var item = new ItemStack(Objects.requireNonNull(Material.matchMaterial(cfg.items().confirm().material())));
+    final var meta = item.getItemMeta();
     meta.displayName(ComponentUtils.miniMessage(cfg.items().confirm().name()));
     final var lore = cfg.items().confirm().lore().stream()
         .map(s -> s.replace("{selectedCount}", String.valueOf(selectedCount)))
@@ -198,9 +196,9 @@ public final class InvitesGui {
   }
 
   private static ItemStack simpleItem(final String matName, final String name, final List<String> lore) {
-    final Material mat = Material.matchMaterial(matName);
-    final ItemStack item = new ItemStack(mat == null ? Material.PAPER : mat);
-    final ItemMeta meta = item.getItemMeta();
+    final var mat = Material.matchMaterial(matName);
+    final var item = new ItemStack(mat == null ? Material.PAPER : mat);
+    final var meta = item.getItemMeta();
     if (name != null && !name.isEmpty()) meta.displayName(ComponentUtils.miniMessage(name));
     if (lore != null && !lore.isEmpty()) meta.lore(lore.stream().map(ComponentUtils::miniMessage).toList());
     item.setItemMeta(meta);
