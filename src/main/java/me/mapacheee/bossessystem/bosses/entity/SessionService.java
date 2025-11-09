@@ -285,7 +285,10 @@ public final class SessionService {
     final var task = this.timeoutTasks.remove(arenaId);
     if (task != null) task.cancel();
 
-    this.teleport.executeEndCommands(result, arenaId, session.bossId, durationMillis, session.leader, participants);
+    final List<UUID> allPlayers = new ArrayList<>(participants);
+    allPlayers.addAll(session.spectators);
+
+    this.teleport.executeEndCommands(result, arenaId, session.bossId, durationMillis, session.leader, allPlayers);
 
     for (final var uid : session.spectators) {
       final var sp = Bukkit.getPlayer(uid);
@@ -295,6 +298,7 @@ public final class SessionService {
     this.sessionsByArena.remove(arenaId);
     this.arenas.setOccupied(arenaId, false);
     participants.forEach(this.playerToArena::remove);
+    session.spectators.forEach(this.playerToArena::remove);
     this.deadOrSpectator.removeAll(session.spectators);
   }
 
