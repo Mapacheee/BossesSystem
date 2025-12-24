@@ -61,9 +61,9 @@ exit:
       commands:
         - "spawn"
     aborted:
-      dispatch-as: console
+      dispatch-as: player
       commands:
-        - "tell {leader} Sesión cancelada"
+        - "spawn"
 integrations:
   require-vault: true
   require-mythicmobs: true
