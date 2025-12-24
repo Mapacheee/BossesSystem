@@ -29,7 +29,15 @@ public record Config(
       int defaultSpawnDelaySeconds,
       int defaultTimeLimitSeconds,
       int defaultMaxPlayers,
-      double defaultPrice
+      double defaultPrice,
+      boolean keepInventoryOnDeath,
+      CommandRestrictions commandRestrictions
+  ) {}
+
+  @ConfigSerializable
+  public record CommandRestrictions(
+      boolean enabled,
+      List<String> whitelist
   ) {}
 
   @ConfigSerializable

@@ -1,6 +1,14 @@
 general:
   rejoin-timeout-seconds: 300
   death-rejoin-as-spectator: true
+  keep-inventory-on-death: true
+  command-restrictions:
+    enabled: true
+    whitelist:
+      - "msg"
+      - "tell"
+      - "reply"
+      - "r"
   invitation:
     auto-expire-seconds: 30
     require-all-accepted: true

@@ -73,6 +73,10 @@ public final class SessionService {
     return arenaId == null ? null : this.sessionsByArena.get(arenaId);
   }
 
+  public boolean isSpectator(final UUID playerId) {
+    return this.deadOrSpectator.contains(playerId);
+  }
+
   public void beginFromInvitation(final String arenaId, final List<UUID> participants) {
     final var arenaCfg = this.arenas.getArena(arenaId);
     if (arenaCfg == null) {

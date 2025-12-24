@@ -82,6 +82,12 @@ public final class PartyService {
       this.expire(inv.leader);
       return;
     }
+
+    if (inv.accepted.contains(invitee.getUniqueId())) {
+      this.messages.flowInviteAlreadyAccepted(invitee);
+      return;
+    }
+
     inv.accepted.add(invitee.getUniqueId());
     final var leader = Bukkit.getPlayer(inv.leader);
     if (leader != null) {

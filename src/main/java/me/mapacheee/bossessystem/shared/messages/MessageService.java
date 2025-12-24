@@ -116,6 +116,10 @@ public final class MessageService {
     this.sendKey(sender, "errors", "spectator-disabled", tags());
   }
 
+  public void errorCommandBlockedInCombat(final CommandSender sender) {
+    this.sendKey(sender, "errors", "command-blocked-in-combat", tags());
+  }
+
   public void errorInvalidWorld(final CommandSender sender, final String world) {
     this.sendKey(sender, "errors", "invalid-world", tags("world", world));
   }
@@ -151,6 +155,10 @@ public final class MessageService {
 
   public void flowInviteAccepted(final Player leader, final String player) {
     this.sendKey(leader, "flow", "invite-accepted", tags("player", player));
+  }
+
+  public void flowInviteAlreadyAccepted(final CommandSender sender) {
+    this.sendKey(sender, "flow", "invite-already-accepted", tags());
   }
 
   public void flowInviteRejected(final Player leader, final String player) {
