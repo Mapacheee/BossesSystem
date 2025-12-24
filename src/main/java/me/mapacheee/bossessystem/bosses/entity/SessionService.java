@@ -168,6 +168,33 @@ public final class SessionService {
     this.endSession(arenaId, session, "timeout", duration, players);
   }
 
+  private void defeat(final String arenaId) {
+    final var session = this.sessionsByArena.get(arenaId);
+    if (session == null) return;
+
+    logger.info("All players died in arena '{}' - Defeat!", arenaId);
+
+    this.mythic.despawn(session.getBossUuid());
+
+    final List<UUID> allPlayers = new ArrayList<>();
+    allPlayers.addAll(session.getParticipants());
+    allPlayers.addAll(session.getSpectators());
+
+    for (final var uid : allPlayers) {
+      final var p = Bukkit.getPlayer(uid);
+      if (p != null) {
+        this.messages.endDefeat(p);
+        this.messages.sendDefeatTitle(p, 10, 70, 20);
+      }
+    }
+
+    final long duration = session.getStartMillis() > 0
+        ? System.currentTimeMillis() - session.getStartMillis()
+        : 0L;
+
+    this.endSession(arenaId, session, "defeat", duration, allPlayers);
+  }
+
   public void onBossDeath(final UUID bossUuid) {
     final var entry = this.sessionsByArena.entrySet().stream()
         .filter(e -> Objects.equals(e.getValue().getBossUuid(), bossUuid))
@@ -360,9 +387,11 @@ public final class SessionService {
     session.getParticipants().remove(player.getUniqueId());
     session.getSpectators().add(player.getUniqueId());
     this.deadOrSpectator.add(player.getUniqueId());
-    this.messages.flowPlayerDied(player);
+
     if (session.getParticipants().isEmpty()) {
-      this.timeout(session.getArenaId());
+      this.defeat(session.getArenaId());
+    } else {
+      this.messages.flowPlayerDied(player);
     }
   }
 

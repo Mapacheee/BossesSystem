@@ -282,4 +282,14 @@ public final class MessageService {
     final var subtitleText = this.resolve("end", "victory-title-subtitle");
     this.sendTitle(player, mainText, subtitleText, fadeInTicks, stayTicks, fadeOutTicks);
   }
+
+  public void sendDefeatTitle(final Player player, final int fadeInTicks, final int stayTicks, final int fadeOutTicks) {
+    final var mainText = this.resolve("end", "defeat-title-main");
+    final var subtitleText = this.resolve("end", "defeat-title-subtitle");
+    this.sendTitle(player, mainText, subtitleText, fadeInTicks, stayTicks, fadeOutTicks);
+  }
+
+  public void endDefeat(final CommandSender sender) {
+    this.sendKey(sender, "end", "defeat", tags());
+  }
 }

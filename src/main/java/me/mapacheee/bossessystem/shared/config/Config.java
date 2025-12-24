@@ -56,7 +56,7 @@ public record Config(
   @ConfigSerializable
   public record Exit(OnEnd onEnd) {
     @ConfigSerializable
-    public record OnEnd(Phase victory, Phase timeout, Phase aborted) {
+    public record OnEnd(Phase victory, Phase defeat, Phase timeout, Phase aborted) {
       @ConfigSerializable
       public record Phase(String dispatchAs, List<String> commands) {}
     }
