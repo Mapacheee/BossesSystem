@@ -51,6 +51,8 @@ admin:
   arena-deleted: "{prefix}<#BF2A45>Arena <#F27B35>{arena} <#BF2A45>eliminada."
   arena-info: "{prefix}<#F2AE2E>Arena <#F27B35>{arena} <#F2AE2E>-> mundo=<#F27B35>{world}<#F2AE2E>, spawn=(<#F27B35>{x},{y},{z},{yaw},{pitch}<#F2AE2E>), jefe=<#F27B35>{boss}<#F2AE2E>, retardo=<#F27B35>{delay}"
   reload-ok: "{prefix}<#F2AE2E>Configuración recargada."
+  session-force-ended: "{prefix}<#F2AE2E>Sesión de la arena <#F27B35>{arena} <#F2AE2E>cerrada forzosamente."
+  session-not-active: "{prefix}<#BF2A45>No hay una sesión activa en la arena <#F27B35>{arena}<#BF2A45>."
 ui:
   invites-title: "<#F2AE2E>Invitar jugadores"
   invites-accept: "<#F2AE2E>Aceptar"

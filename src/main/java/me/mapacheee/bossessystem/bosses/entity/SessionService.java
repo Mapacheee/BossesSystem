@@ -77,6 +77,27 @@ public final class SessionService {
     return this.deadOrSpectator.contains(playerId);
   }
 
+  public boolean forceEndSession(final String arenaId) {
+    final var session = this.sessionsByArena.get(arenaId);
+    if (session == null) {
+      return false;
+    }
+
+    this.mythic.despawn(session.getBossUuid());
+
+    final List<UUID> allPlayers = new ArrayList<>();
+    allPlayers.addAll(session.getParticipants());
+    allPlayers.addAll(session.getSpectators());
+
+    final long duration = session.getStartMillis() > 0
+        ? System.currentTimeMillis() - session.getStartMillis()
+        : 0L;
+
+    this.endSession(arenaId, session, "aborted", duration, allPlayers);
+
+    return true;
+  }
+
   public void beginFromInvitation(final String arenaId, final List<UUID> participants) {
     final var arenaCfg = this.arenas.getArena(arenaId);
     if (arenaCfg == null) {

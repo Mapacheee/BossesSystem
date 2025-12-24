@@ -217,6 +217,14 @@ public final class MessageService {
     this.sendKey(sender, "admin", "reload-ok", tags());
   }
 
+  public void adminSessionForceEnded(final CommandSender sender, final String arena) {
+    this.sendKey(sender, "admin", "session-force-ended", tags("arena", arena));
+  }
+
+  public void adminSessionNotActive(final CommandSender sender, final String arena) {
+    this.sendKey(sender, "admin", "session-not-active", tags("arena", arena));
+  }
+
   public void adminArenaCreated(final CommandSender sender, final String arena) {
     this.sendKey(sender, "admin", "arena-created", tags("arena", arena));
   }

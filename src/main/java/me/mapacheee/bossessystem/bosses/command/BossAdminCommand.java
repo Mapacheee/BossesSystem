@@ -5,6 +5,7 @@ import com.thewinterframework.command.CommandComponent;
 import com.thewinterframework.component.ComponentUtils;
 import com.thewinterframework.configurate.Container;
 import com.thewinterframework.service.ReloadServiceManager;
+import me.mapacheee.bossessystem.bosses.entity.SessionService;
 import me.mapacheee.bossessystem.shared.config.Config;
 import me.mapacheee.bossessystem.shared.config.ConfigPersistenceService;
 import me.mapacheee.bossessystem.shared.messages.MessageService;
@@ -24,18 +25,21 @@ public final class BossAdminCommand {
   private final Container<Messages> messagesContainer;
   private final ConfigPersistenceService persistence;
   private final ReloadServiceManager reloadServiceManager;
+  private final SessionService sessions;
 
   @Inject
   public BossAdminCommand(final Container<Config> config,
                           final MessageService messages,
                           final Container<Messages> messagesContainer,
                           final ConfigPersistenceService persistence,
-                          final ReloadServiceManager reloadServiceManager) {
+                          final ReloadServiceManager reloadServiceManager,
+                          final SessionService sessions) {
     this.config = config;
     this.messages = messages;
     this.messagesContainer = messagesContainer;
     this.persistence = persistence;
     this.reloadServiceManager = reloadServiceManager;
+    this.sessions = sessions;
   }
 
   @Command("bossadmin|bossesadmin|bosses:admin|boss:admin reload")
@@ -346,5 +350,16 @@ public final class BossAdminCommand {
     if (arenas != null) arenas.remove(id);
     this.persistence.removeArena(id);
     this.messages.adminArenaDeleted(sender.source(), id);
+  }
+
+  @Command("bossadmin|bossesadmin|bosses:admin|boss:admin session end <arena>")
+  @Permission("bossesystem.admin.session.end")
+  public void forceEndSession(final Source sender, final @Argument("arena") String arenaId) {
+    final boolean ended = this.sessions.forceEndSession(arenaId);
+    if (ended) {
+      this.messages.adminSessionForceEnded(sender.source(), arenaId);
+    } else {
+      this.messages.adminSessionNotActive(sender.source(), arenaId);
+    }
   }
 }
