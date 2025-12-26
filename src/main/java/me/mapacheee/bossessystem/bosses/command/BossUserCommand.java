@@ -6,6 +6,7 @@ import com.thewinterframework.component.ComponentUtils;
 import me.mapacheee.bossessystem.bosses.entity.ArenaRegistryService;
 import me.mapacheee.bossessystem.bosses.entity.PartyService;
 import me.mapacheee.bossessystem.bosses.entity.SessionService;
+import me.mapacheee.bossessystem.bosses.gui.ArenasGui;
 import me.mapacheee.bossessystem.bosses.gui.InvitesGui;
 import me.mapacheee.bossessystem.shared.messages.MessageService;
 import org.bukkit.entity.Player;
@@ -21,14 +22,16 @@ import java.util.stream.Collectors;
 public final class BossUserCommand {
 
   private final InvitesGui invitesGui;
+  private final ArenasGui arenasGui;
   private final ArenaRegistryService arenas;
   private final PartyService parties;
   private final MessageService messages;
   private final SessionService sessions;
 
   @Inject
-  public BossUserCommand(final InvitesGui invitesGui, final ArenaRegistryService arenas, final PartyService parties, final MessageService messages, final SessionService sessions) {
+  public BossUserCommand(final InvitesGui invitesGui, final ArenasGui arenasGui, final ArenaRegistryService arenas, final PartyService parties, final MessageService messages, final SessionService sessions) {
     this.invitesGui = invitesGui;
+    this.arenasGui = arenasGui;
     this.arenas = arenas;
     this.parties = parties;
     this.messages = messages;
@@ -38,6 +41,16 @@ public final class BossUserCommand {
   @Command("boss|bosses arenas")
   @Permission("bossesystem.use.arenas")
   public void arenas(final Source sender) {
+    if (!(sender.source() instanceof Player p)) {
+      this.messages.errorPlayerOnly(sender.source());
+      return;
+    }
+    this.arenasGui.open(p);
+  }
+
+  @Command("boss|bosses list")
+  @Permission("bossesystem.use.arenas")
+  public void list(final Source sender) {
     final var ids = this.arenas.arenaIds();
     final var list = ids.isEmpty() ? "-" : ids.stream()
         .map(id -> id + "(" + (this.arenas.isOccupied(id) ? "ocupada" : "libre") + ")")

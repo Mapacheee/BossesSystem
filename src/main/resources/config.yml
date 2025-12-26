@@ -110,4 +110,46 @@ gui:
       click: ""
       confirm: ""
       error: ""
+  arenas:
+    title: "      <#BF2A45><bold>Arenas Disponibles"
+    rows: 6
+    page-size: 45
+    slots:
+      arenas-start-slot: 0
+      prev-slot: 48
+      next-slot: 50
+      filler-slots: [45,46,47,49,51,52,53]
+    items:
+      arena:
+        name: "<#FFD700><bold>{arena}"
+        material-available: LIME_CONCRETE
+        material-occupied: RED_CONCRETE
+        lore-available:
+          - "<#00FF7F>Estado: {status}"
+          - "<#A0A0A0>Boss: <#FF6347>{boss}"
+          - "<#A0A0A0>Jugadores: <#00CED1>{maxPlayers}"
+          - "<#A0A0A0>Precio: <#FFD700>${price}"
+          - ""
+          - "<#00FF00>¡Clic para jugar!"
+        lore-occupied:
+          - "<#FF0000>Estado: {status}"
+          - "<#A0A0A0>Boss: <#FF6347>{boss}"
+          - "<#A0A0A0>Jugadores: <#00CED1>{maxPlayers}"
+          - "<#A0A0A0>Precio: <#FFD700>${price}"
+          - ""
+          - "<#FF0000>Arena ocupada"
+        status-available: "<#00FF00>Disponible"
+        status-occupied: "<#FF0000>Ocupada"
+      prev:
+        material: ARROW
+        name: "<#FFD700>Página anterior"
+        lore: []
+      next:
+        material: ARROW
+        name: "<#FFD700>Página siguiente"
+        lore: []
+      filler:
+        material: BLACK_STAINED_GLASS_PANE
+        name: " "
+        lore: []
 arenas: {}

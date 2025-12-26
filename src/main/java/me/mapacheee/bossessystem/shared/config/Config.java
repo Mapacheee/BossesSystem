@@ -69,7 +69,7 @@ public record Config(
   }
 
   @ConfigSerializable
-  public record Gui(Invites invites) {
+  public record Gui(Invites invites, Arenas arenas) {
     @ConfigSerializable
     public record Invites(
         String title,
@@ -92,6 +92,33 @@ public record Config(
       }
       @ConfigSerializable
       public record Sounds(String click, String confirm, String error) {}
+    }
+
+    @ConfigSerializable
+    public record Arenas(
+        String title,
+        int rows,
+        int pageSize,
+        Slots slots,
+        Items items
+    ) {
+      @ConfigSerializable
+      public record Slots(int arenasStartSlot, int prevSlot, int nextSlot, List<Integer> fillerSlots) {}
+      @ConfigSerializable
+      public record Items(ArenaItem arena, SimpleItem prev, SimpleItem next, SimpleItem filler) {
+        @ConfigSerializable
+        public record ArenaItem(
+            String name,
+            String materialAvailable,
+            String materialOccupied,
+            List<String> loreAvailable,
+            List<String> loreOccupied,
+            String statusAvailable,
+            String statusOccupied
+        ) {}
+        @ConfigSerializable
+        public record SimpleItem(String material, String name, List<String> lore) {}
+      }
     }
   }
 
